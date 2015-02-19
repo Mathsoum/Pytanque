@@ -37,5 +37,6 @@ class MainWindow(QMainWindow):
 
         # Setup main window
         self.setWindowTitle('Pétanque')
+        self.resize(500, 400)
         self.show()
 
