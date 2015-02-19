@@ -1,4 +1,5 @@
 from PySide.QtGui import QAction, QMainWindow
+from contestwidget import ContestWidget
 from registration_widget import RegistrationWidget
 from team_model import team_model
 
@@ -31,6 +32,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
         # Connect action to slots
+        self.generate_match_action.triggered.connect(self.start_contest)
         self.team_add_action.triggered.connect(central_widget.add_new_team_slot)
         self.team_edt_action.triggered.connect(central_widget.edt_team_slot)
         self.team_del_action.triggered.connect(central_widget.del_team_slot)
@@ -39,4 +41,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Pétanque')
         self.resize(500, 400)
         self.show()
+
+    def start_contest(self):
+        self.setCentralWidget(ContestWidget())
+        self.resize(700, 500)
 
