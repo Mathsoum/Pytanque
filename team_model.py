@@ -54,5 +54,21 @@ class TeamModel(QAbstractItemModel):
         self.team_list.append(Team(name, club))
         self.endInsertRows()
 
+    def get_team(self, row):
+        return self.team_list[row]
+
+    def update_team(self, team, new_name, new_club):
+        self.beginResetModel()
+        team_idx = self.team_list.index(team)
+        self.team_list[team_idx] = Team(new_name, new_club)
+        self.endResetModel()
+
+    def delete_team(self, team):
+        team_idx = self.team_list.index(team)
+        self.beginRemoveRows(QModelIndex(), team_idx, team_idx)
+        self.team_list.pop(team_idx)
+        self.endRemoveRows()
+
+
 
 team_model = TeamModel()
