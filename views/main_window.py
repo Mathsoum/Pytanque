@@ -1,7 +1,6 @@
 from PySide.QtGui import QAction, QMainWindow
-from contestwidget import ContestWidget
-from registration_widget import RegistrationWidget
-from team_model import team_model
+from domain.models import team_model
+from views.widgets import RegistrationWidget, ContestWidget
 
 __author__ = 'Mathieu'
 

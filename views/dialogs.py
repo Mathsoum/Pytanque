@@ -1,6 +1,6 @@
-from PySide.QtGui import QDialog, QDialogButtonBox, QLineEdit, QHBoxLayout, QVBoxLayout, QFormLayout
+from PySide.QtGui import QDialog, QLineEdit, QFormLayout, QDialogButtonBox, QHBoxLayout, QVBoxLayout
 
-__author__ = 'Mathieu'
+__author__ = 'msoum'
 
 
 class TeamDialog(QDialog):

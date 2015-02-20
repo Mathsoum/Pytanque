@@ -1,7 +1,7 @@
 from PySide.QtCore import QAbstractItemModel, QModelIndex, Qt
-from domain import Team
+from domain.data_structures import Team
 
-__author__ = 'Mathieu'
+__author__ = 'msoum'
 
 
 class TeamModel(QAbstractItemModel):

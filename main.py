@@ -1,8 +1,10 @@
 __author__ = 'Mathieu'
 
 import sys
+
 from PySide.QtGui import QApplication
-from main_window import MainWindow
+
+from views.main_window import MainWindow
 
 
 def main():
