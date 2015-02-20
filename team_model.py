@@ -30,7 +30,7 @@ class TeamModel(QAbstractItemModel):
         elif role == Qt.TextAlignmentRole:
             return Qt.AlignCenter
         else:
-            None
+            return None
 
     def index(self, row, column, parent=QModelIndex):
         return self.createIndex(row, column)
@@ -68,7 +68,6 @@ class TeamModel(QAbstractItemModel):
         self.beginRemoveRows(QModelIndex(), team_idx, team_idx)
         self.team_list.pop(team_idx)
         self.endRemoveRows()
-
 
 
 team_model = TeamModel()
