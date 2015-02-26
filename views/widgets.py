@@ -1,6 +1,7 @@
 from PySide.QtCore import Qt
 from PySide.QtGui import QWidget, QLabel, QTableView, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QPushButton, \
     QIcon, QAbstractItemView, QDialog, QMessageBox
+from domain.models import MatchModel
 from views.dialogs import TeamDialog
 
 __author__ = 'msoum'
@@ -14,6 +15,12 @@ class ContestWidget(QWidget):
         self.first_match_label = QLabel("Match #1")
         self.first_match_label.setAlignment(Qt.AlignCenter)
         self.first_match_table_view = QTableView()
+        self.first_match_table_view.setModel(MatchModel())
+        self.first_match_table_view.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.first_match_table_view.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.first_match_table_view.setColumnWidth(0, 150)
+        self.first_match_table_view.setColumnWidth(1, 150)
+        self.first_match_table_view.currentChanged.connect(self.selection_changed)
         first_match_layout = QVBoxLayout()
         first_match_layout.addWidget(self.first_match_label)
         first_match_layout.addWidget(self.first_match_table_view)
@@ -81,6 +88,11 @@ class ContestWidget(QWidget):
         main_layout.addLayout(validate_button_layout)
 
         self.setLayout(main_layout)
+
+    def selection_changed(self):
+        selected_row = self.first_match_table_view.currentIndex().row()
+        match = self.first_match_table_view.model().get_match(selected_row)
+        print(match)
 
     def winner_selected_slot(self):
         # Enable/Disable validate button
