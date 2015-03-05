@@ -9,6 +9,9 @@ class Team():
     def __str__(self):
         return '{0} ({1})'.format(self.name, self.club)
 
+    def __unicode__(self):
+        return '{0} ({1})'.format(self.name, self.club)
+
 
 class Match():
     def __init__(self, first_team, second_team):
@@ -16,4 +19,8 @@ class Match():
         self.second_team = second_team
 
     def __str__(self):
-        return '{0} vs {1}'.format(self.first_team, self.second_team)
+        return '{0} vs {1}'.format(str(self.first_team), str(self.second_team))
+
+    def __unicode__(self):
+        return '{0} vs {1}'.format(str(self.first_team), str(self.second_team))
+
