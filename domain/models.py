@@ -1,52 +1,8 @@
 from random import shuffle
 from PySide.QtCore import QAbstractItemModel, QModelIndex, Qt
-from domain.data_structures import Team
+from domain.data_structures import Team, Match
 
 __author__ = 'msoum'
-
-
-class MatchModel(QAbstractItemModel):
-    def __init__(self):
-        super(MatchModel, self).__init__()
-
-        # Generate first match list
-        team_model_copy = team_model.team_list
-        shuffle(team_model_copy)
-        self.match_list = []
-        for i in range(0, len(team_model_copy), 2):
-            if i == len(team_model_copy) - 1:
-                self.match_list.append((team_model_copy[i], Team('NO_NAME', 'NO_CLUB')))
-            else:
-                self.match_list.append((team_model_copy[i], team_model_copy[i+1]))
-
-    def columnCount(self, parent=QModelIndex):
-        return 2
-
-    def rowCount(self, parent=QModelIndex):
-        return len(self.match_list)
-
-    def data(self, index, role=Qt.DisplayRole):
-        if role == Qt.DisplayRole:
-            if index.column() == 0:
-                return self.match_list[index.row()][0].name
-            if index.column() == 1:
-                return self.match_list[index.row()][1].name
-        elif role == Qt.TextAlignmentRole:
-            return Qt.AlignCenter
-        else:
-            return None
-
-    def index(self, row, column, parent=QModelIndex):
-        return self.createIndex(row, column)
-
-    def parent(self, child):
-        return QModelIndex()
-
-    def headerData(self, section, orientation, role):
-        return None
-
-    def get_match(self, index):
-        return self.match_list[index]
 
 
 class TeamModel(QAbstractItemModel):
@@ -117,3 +73,47 @@ class TeamModel(QAbstractItemModel):
 
 
 team_model = TeamModel()
+
+
+class MatchModel(QAbstractItemModel):
+    def __init__(self):
+        super(MatchModel, self).__init__()
+
+        # Generate first match list
+        team_model_copy = team_model.team_list
+        shuffle(team_model_copy)
+        self.match_list = []
+        for i in range(0, len(team_model_copy), 2):
+            if i == len(team_model_copy) - 1:
+                self.match_list.append(Match(team_model_copy[i], Team('NO_NAME', 'NO_CLUB')))
+            else:
+                self.match_list.append(Match(team_model_copy[i], team_model_copy[i+1]))
+
+    def columnCount(self, parent=QModelIndex):
+        return 2
+
+    def rowCount(self, parent=QModelIndex):
+        return len(self.match_list)
+
+    def data(self, index, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole:
+            if index.column() == 0:
+                return self.match_list[index.row()].first_team.name
+            if index.column() == 1:
+                return self.match_list[index.row()].second_team.name
+        elif role == Qt.TextAlignmentRole:
+            return Qt.AlignCenter
+        else:
+            return None
+
+    def index(self, row, column, parent=QModelIndex):
+        return self.createIndex(row, column)
+
+    def parent(self, child):
+        return QModelIndex()
+
+    def headerData(self, section, orientation, role):
+        return None
+
+    def get_match(self, index):
+        return self.match_list[index]

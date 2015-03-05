@@ -1,4 +1,4 @@
-from PySide.QtCore import Qt
+from PySide.QtCore import Qt, QModelIndex
 from PySide.QtGui import QWidget, QLabel, QTableView, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QPushButton, \
     QIcon, QAbstractItemView, QDialog, QMessageBox
 from domain.models import MatchModel
@@ -8,6 +8,14 @@ __author__ = 'msoum'
 
 
 class ContestWidget(QWidget):
+    @staticmethod
+    def setup_view(model, view):
+        view.setModel(model)
+        view.setSelectionBehavior(QAbstractItemView.SelectRows)
+        view.setSelectionMode(QAbstractItemView.SingleSelection)
+        view.setColumnWidth(0, 150)
+        view.setColumnWidth(1, 150)
+
     def __init__(self):
         super(ContestWidget, self).__init__()
 
@@ -15,12 +23,9 @@ class ContestWidget(QWidget):
         self.first_match_label = QLabel("Match #1")
         self.first_match_label.setAlignment(Qt.AlignCenter)
         self.first_match_table_view = QTableView()
-        self.first_match_table_view.setModel(MatchModel())
-        self.first_match_table_view.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.first_match_table_view.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.first_match_table_view.setColumnWidth(0, 150)
-        self.first_match_table_view.setColumnWidth(1, 150)
-        self.first_match_table_view.currentChanged.connect(self.selection_changed)
+        self.setup_view(MatchModel(), self.first_match_table_view)
+        selection_model = self.first_match_table_view.selectionModel()
+        selection_model.currentChanged.connect(self.selection_changed)
         first_match_layout = QVBoxLayout()
         first_match_layout.addWidget(self.first_match_label)
         first_match_layout.addWidget(self.first_match_table_view)
@@ -92,7 +97,9 @@ class ContestWidget(QWidget):
     def selection_changed(self):
         selected_row = self.first_match_table_view.currentIndex().row()
         match = self.first_match_table_view.model().get_match(selected_row)
-        print(match)
+
+        self.button_group.buttons()[0].setText(str(match.first_team))
+        self.button_group.buttons()[1].setText(str(match.second_team))
 
     def winner_selected_slot(self):
         # Enable/Disable validate button
