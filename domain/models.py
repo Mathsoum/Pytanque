@@ -96,13 +96,33 @@ class MatchModel(QAbstractItemModel):
         return len(self.match_list)
 
     def data(self, index, role=Qt.DisplayRole):
+        selected_match = self.match_list[index.row()]
         if role == Qt.DisplayRole:
             if index.column() == 0:
-                return self.match_list[index.row()].first_team.name
+                return selected_match.first_team.name
             if index.column() == 1:
-                return self.match_list[index.row()].second_team.name
+                return selected_match.second_team.name
         elif role == Qt.TextAlignmentRole:
             return Qt.AlignCenter
+        elif role == Qt.BackgroundColorRole:
+            if selected_match.is_finished():
+                if selected_match.is_winner(selected_match.first_team):
+                    if index.column == 0:
+                        return Qt.green
+                    else:
+                        return Qt.red
+                elif selected_match.is_winner(selected_match.second_team):
+                    if index.column == 0:
+                        return Qt.red
+                    else:
+                        return Qt.green
+            else:
+                return None
+        elif role == Qt.BackgroundRole:
+            if selected_match.is_finished():
+                return Qt.Dense5Pattern
+            else:
+                return None
         else:
             return None
 
