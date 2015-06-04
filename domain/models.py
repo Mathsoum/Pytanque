@@ -1,5 +1,6 @@
 from random import shuffle
 from PySide.QtCore import QAbstractItemModel, QModelIndex, Qt
+from PySide.QtGui import QBrush
 from domain.data_structures import Team, Match
 
 __author__ = 'msoum'
@@ -87,7 +88,7 @@ class MatchModel(QAbstractItemModel):
             if i == len(team_model_copy) - 1:
                 self.match_list.append(Match(team_model_copy[i], Team('NO_NAME', 'NO_CLUB')))
             else:
-                self.match_list.append(Match(team_model_copy[i], team_model_copy[i+1]))
+                self.match_list.append(Match(team_model_copy[i], team_model_copy[i + 1]))
 
     def columnCount(self, parent=QModelIndex):
         return 2
@@ -104,23 +105,18 @@ class MatchModel(QAbstractItemModel):
                 return selected_match.second_team.name
         elif role == Qt.TextAlignmentRole:
             return Qt.AlignCenter
-        elif role == Qt.BackgroundColorRole:
-            if selected_match.is_finished():
-                if selected_match.is_winner(selected_match.first_team):
-                    if index.column == 0:
-                        return Qt.green
-                    else:
-                        return Qt.red
-                elif selected_match.is_winner(selected_match.second_team):
-                    if index.column == 0:
-                        return Qt.red
-                    else:
-                        return Qt.green
-            else:
-                return None
         elif role == Qt.BackgroundRole:
             if selected_match.is_finished():
-                return Qt.Dense5Pattern
+                if selected_match.is_winner(selected_match.first_team):
+                    if index.column() == 0:
+                        return QBrush(Qt.green, Qt.Dense5Pattern)
+                    else:
+                        return QBrush(Qt.red, Qt.Dense5Pattern)
+                elif selected_match.is_winner(selected_match.second_team):
+                    if index.column() == 0:
+                        return QBrush(Qt.red, Qt.Dense5Pattern)
+                    else:
+                        return QBrush(Qt.green, Qt.Dense5Pattern)
             else:
                 return None
         else:
@@ -137,3 +133,16 @@ class MatchModel(QAbstractItemModel):
 
     def get_match(self, index):
         return self.match_list[index]
+
+    def find_match_with_player(self, player):
+        return [it for it in self.match_list if it.first_team == player or it.second_team == player][0]
+
+    def set_winner(self, winner):
+        match = self.find_match_with_player(winner)
+        idx = self.match_list.index(match)
+        print("Match : <%s> vs <%s>" % (match.first_team, match.second_team))
+        print("Match : %s wins" % winner)
+        match.set_finished(winner)
+        print(self.match_list[idx].is_finished())
+        print("Match : Index %d updated" % idx)
+        self.dataChanged.emit(self.index(0, idx), self.index(1, idx))

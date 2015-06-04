@@ -43,5 +43,5 @@ class MainWindow(QMainWindow):
 
     def start_contest(self):
         self.setCentralWidget(ContestWidget())
-        self.resize(700, 500)
+        self.resize(800, 500)
 
