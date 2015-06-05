@@ -20,7 +20,7 @@ class ContestWidget(QWidget):
         super(ContestWidget, self).__init__()
 
         # Currently selected match (for later use)
-        self.selected_table = None
+        self.selected_table_view = None
         self.selected_index = None
 
         # Table views & labels
@@ -29,7 +29,7 @@ class ContestWidget(QWidget):
         self.first_match_table_view = QTableView()
         self.setup_view(MatchModel(), self.first_match_table_view)
         selection_model = self.first_match_table_view.selectionModel()
-        selection_model.currentChanged.connect(self.selection_changed)
+        selection_model.currentChanged.connect(self.selection_changed_first_view)
         first_match_layout = QVBoxLayout()
         first_match_layout.addWidget(self.first_match_label)
         first_match_layout.addWidget(self.first_match_table_view)
@@ -98,10 +98,25 @@ class ContestWidget(QWidget):
 
         self.setLayout(main_layout)
 
-    def selection_changed(self):  # TODO This needs to be dynamic to the selected view
-        self.selected_table = self.first_match_table_view.model()
-        self.selected_index = self.first_match_table_view.currentIndex().row()
-        selected_match = self.first_match_table_view.model().get_match(self.selected_index)
+    def selection_changed_first_view(self):
+        self.selected_table_view = self.first_match_table_view
+        self.selection_changed()
+
+    def selection_changed_second_view(self):
+        self.selected_table_view = self.second_match_table_view
+        self.selection_changed()
+
+    def selection_changed_third_view(self):
+        self.selected_table_view = self.third_match_table_view
+        self.selection_changed()
+
+    def selection_changed_fourth_view(self):
+        self.selected_table_view = self.fourth_match_table_view
+        self.selection_changed()
+
+    def selection_changed(self):
+        self.selected_index = self.selected_table_view.currentIndex().row()
+        selected_match = self.selected_table_view.model().get_match(self.selected_index)
         self.button_group.buttons()[0].setText(str(selected_match.first_team))
         self.button_group.buttons()[1].setText(str(selected_match.second_team))
 
@@ -110,11 +125,11 @@ class ContestWidget(QWidget):
         self.validate_button.setEnabled(self.button_group.checkedButton() is not None)
 
     def set_winner_validate_button_slot(self):
-        match = self.selected_table.get_match(self.selected_index)
+        match = self.selected_table_view.get_match(self.selected_index)
         if self.first_team_button.isChecked():
-            self.selected_table.set_winner(match.first_team)
+            self.selected_table_view.set_winner(match.first_team)
         else:
-            self.selected_table.set_winner(match.second_team)
+            self.selected_table_view.set_winner(match.second_team)
         self.clear_selected_winner()
 
     def clear_selected_winner(self):
