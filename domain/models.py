@@ -86,7 +86,7 @@ class MatchModel(QAbstractItemModel):
         self.match_list = []
         for i in range(0, len(team_model_copy), 2):
             if i == len(team_model_copy) - 1:
-                self.match_list.append(Match(team_model_copy[i], Team('NO_NAME', 'NO_CLUB')))
+                self.match_list.append(Match(team_model_copy[i]))
             else:
                 self.match_list.append(Match(team_model_copy[i], team_model_copy[i + 1]))
 
@@ -140,9 +140,5 @@ class MatchModel(QAbstractItemModel):
     def set_winner(self, winner):
         match = self.find_match_with_player(winner)
         idx = self.match_list.index(match)
-        print("Match : <%s> vs <%s>" % (match.first_team, match.second_team))
-        print("Match : %s wins" % winner)
         match.set_finished(winner)
-        print(self.match_list[idx].is_finished())
-        print("Match : Index %d updated" % idx)
         self.dataChanged.emit(self.index(0, idx), self.index(1, idx))
