@@ -1,3 +1,4 @@
+from enum import Enum
 from random import shuffle
 from PySide.QtCore import QAbstractItemModel, QModelIndex, Qt
 from PySide.QtGui import QBrush
@@ -79,16 +80,11 @@ team_model = TeamModel()
 class MatchModel(QAbstractItemModel):
     def __init__(self):
         super(MatchModel, self).__init__()
-
-        # Generate first match list
-        team_model_copy = team_model.team_list
-        shuffle(team_model_copy)
         self.match_list = []
-        for i in range(0, len(team_model_copy), 2):
-            if i == len(team_model_copy) - 1:
-                self.match_list.append(Match(team_model_copy[i]))
-            else:
-                self.match_list.append(Match(team_model_copy[i], team_model_copy[i + 1]))
+
+    def add_match(self, match):
+        if match not in self.match_list:
+            self.match_list.append(match)
 
     def columnCount(self, parent=QModelIndex):
         return 2
@@ -142,3 +138,46 @@ class MatchModel(QAbstractItemModel):
         idx = self.match_list.index(match)
         match.set_finished(winner)
         self.dataChanged.emit(self.index(0, idx), self.index(1, idx))
+
+    def get_match_finished_count(self):
+        return len([it for it in self.match_list if it.is_finished()])
+
+
+class ContestPhase(Enum):
+    FIRST = 1
+    SECOND = 2
+    THIRD = 3
+    FOURTH = 4
+
+
+class ContestModel:
+    def __init__(self):
+        self.first_match_model = MatchModel()
+        self.second_match_model = MatchModel()
+        self.third_match_model = MatchModel()
+        self.fourth_match_model = MatchModel()
+
+        self.init_first_match_model()
+
+    def init_first_match_model(self):
+        # Generate first match list
+        team_model_copy = team_model.team_list
+        shuffle(team_model_copy)
+        for i in range(0, len(team_model_copy), 2):
+            if i == len(team_model_copy) - 1:
+                self.first_match_model.add_match(Match(team_model_copy[i]))
+            else:
+                self.first_match_model.add_match(Match(team_model_copy[i], team_model_copy[i + 1]))
+
+    def set_winner(self, match, model):
+        if model is self.first_match_model:
+            pass
+        elif model is self.second_match_model:
+            pass
+        elif model is self.third_match_model:
+            pass
+        elif model is self.fourth_match_model:
+            pass
+        else:
+            pass
+

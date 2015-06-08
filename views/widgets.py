@@ -1,7 +1,7 @@
 from PySide.QtCore import Qt, QModelIndex
 from PySide.QtGui import QWidget, QLabel, QTableView, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QPushButton, \
     QIcon, QAbstractItemView, QDialog, QMessageBox
-from domain.models import MatchModel
+from domain.models import MatchModel, ContestModel
 from views.dialogs import TeamDialog
 
 __author__ = 'msoum'
@@ -23,11 +23,14 @@ class ContestWidget(QWidget):
         self.selected_table_view = None
         self.selected_index = None
 
+        # ContestModel creation
+        self.contest_model = ContestModel()
+
         # Table views & labels
         self.first_match_label = QLabel("Match #1")
         self.first_match_label.setAlignment(Qt.AlignCenter)
         self.first_match_table_view = QTableView()
-        self.setup_view(MatchModel(), self.first_match_table_view)
+        self.setup_view(self.contest_model.first_match_model, self.first_match_table_view)
         selection_model = self.first_match_table_view.selectionModel()
         selection_model.currentChanged.connect(self.selection_changed_first_view)
         first_match_layout = QVBoxLayout()
@@ -37,6 +40,7 @@ class ContestWidget(QWidget):
         self.second_match_label = QLabel("Match #2")
         self.second_match_label.setAlignment(Qt.AlignCenter)
         self.second_match_table_view = QTableView()
+        self.setup_view(self.contest_model.second_match_model, self.second_match_table_view)
         second_match_layout = QVBoxLayout()
         second_match_layout.addWidget(self.second_match_label)
         second_match_layout.addWidget(self.second_match_table_view)
@@ -44,6 +48,7 @@ class ContestWidget(QWidget):
         self.third_match_label = QLabel("Match #3")
         self.third_match_label.setAlignment(Qt.AlignCenter)
         self.third_match_table_view = QTableView()
+        self.setup_view(self.contest_model.third_match_model, self.third_match_table_view)
         third_match_layout = QVBoxLayout()
         third_match_layout.addWidget(self.third_match_label)
         third_match_layout.addWidget(self.third_match_table_view)
@@ -51,6 +56,7 @@ class ContestWidget(QWidget):
         self.fourth_match_label = QLabel("Match #4")
         self.fourth_match_label.setAlignment(Qt.AlignCenter)
         self.fourth_match_table_view = QTableView()
+        self.setup_view(self.contest_model.fourth_match_model, self.fourth_match_table_view)
         fourth_match_layout = QVBoxLayout()
         fourth_match_layout.addWidget(self.fourth_match_label)
         fourth_match_layout.addWidget(self.fourth_match_table_view)
@@ -125,11 +131,11 @@ class ContestWidget(QWidget):
         self.validate_button.setEnabled(self.button_group.checkedButton() is not None)
 
     def set_winner_validate_button_slot(self):
-        match = self.selected_table_view.get_match(self.selected_index)
+        match = self.selected_table_view.model().get_match(self.selected_index)
         if self.first_team_button.isChecked():
-            self.selected_table_view.set_winner(match.first_team)
+            self.selected_table_view.model().set_winner(match.first_team)
         else:
-            self.selected_table_view.set_winner(match.second_team)
+            self.selected_table_view.model().set_winner(match.second_team)
         self.clear_selected_winner()
 
     def clear_selected_winner(self):
