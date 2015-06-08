@@ -158,9 +158,18 @@ class ContestPhase(Enum):
 class ContestModel:
     def __init__(self):
         self.first_match_model = MatchModel()
-        self.second_match_model = MatchModel()
-        self.third_match_model = MatchModel()
-        self.fourth_match_model = MatchModel()
+
+        self.second_match_no_win_model = MatchModel()
+        self.second_match_one_win_model = MatchModel()
+
+        self.third_match_no_win_model = MatchModel()
+        self.third_match_one_win_model = MatchModel()
+        self.third_match_two_win_model = MatchModel()
+
+        self.fourth_match_no_win_model = MatchModel()
+        self.fourth_match_one_win_model = MatchModel()
+        self.fourth_match_two_win_model = MatchModel()
+        self.fourth_match_three_win_model = MatchModel()
 
         self.init_first_match_model()
 
@@ -181,11 +190,23 @@ class ContestModel:
 
         if model is self.first_match_model:
             pass
-        elif model is self.second_match_model:
+        elif model is self.second_match_no_win_model:
             pass
-        elif model is self.third_match_model:
+        elif model is self.second_match_one_win_model:
             pass
-        elif model is self.fourth_match_model:
+        elif model is self.third_match_no_win_model:
+            pass
+        elif model is self.third_match_one_win_model:
+            pass
+        elif model is self.third_match_two_win_model:
+            pass
+        elif model is self.fourth_match_no_win_model:
+            pass
+        elif model is self.fourth_match_one_win_model:
+            pass
+        elif model is self.fourth_match_two_win_model:
+            pass
+        elif model is self.fourth_match_three_win_model:
             pass
         else:
             pass
