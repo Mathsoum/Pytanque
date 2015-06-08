@@ -81,10 +81,15 @@ class MatchModel(QAbstractItemModel):
     def __init__(self):
         super(MatchModel, self).__init__()
         self.match_list = []
+        self.team_list = []
 
     def add_match(self, match):
         if match not in self.match_list:
             self.match_list.append(match)
+
+    def add_team(self, team):
+        if team not in self.team_list:
+            self.team_list.append(team)
 
     def columnCount(self, parent=QModelIndex):
         return 2
@@ -169,7 +174,11 @@ class ContestModel:
             else:
                 self.first_match_model.add_match(Match(team_model_copy[i], team_model_copy[i + 1]))
 
-    def set_winner(self, match, model):
+    def set_winner(self, team, model):
+        match = model.find_match_with_player(team)
+        match.set_finished(team)
+        team.win_count += 1
+
         if model is self.first_match_model:
             pass
         elif model is self.second_match_model:
@@ -180,4 +189,3 @@ class ContestModel:
             pass
         else:
             pass
-

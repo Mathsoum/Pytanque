@@ -7,6 +7,7 @@ class Team:
     def __init__(self, name='NO_NAME', club='NO_CLUB'):
         self.name = name
         self.club = club
+        self.win_count = 0
 
     def __str__(self):
         return '{0} ({1})'.format(self.name, self.club)

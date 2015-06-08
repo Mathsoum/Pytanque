@@ -1,7 +1,7 @@
-from PySide.QtCore import Qt, QModelIndex
+from PySide.QtCore import Qt
 from PySide.QtGui import QWidget, QLabel, QTableView, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QPushButton, \
     QIcon, QAbstractItemView, QDialog, QMessageBox
-from domain.models import MatchModel, ContestModel
+from domain.models import ContestModel
 from views.dialogs import TeamDialog
 
 __author__ = 'msoum'
