@@ -158,18 +158,9 @@ class ContestPhase(Enum):
 class ContestModel:
     def __init__(self):
         self.first_match_model = MatchModel()
-
-        self.second_match_no_win_model = MatchModel()
-        self.second_match_one_win_model = MatchModel()
-
-        self.third_match_no_win_model = MatchModel()
-        self.third_match_one_win_model = MatchModel()
-        self.third_match_two_win_model = MatchModel()
-
-        self.fourth_match_no_win_model = MatchModel()
-        self.fourth_match_one_win_model = MatchModel()
-        self.fourth_match_two_win_model = MatchModel()
-        self.fourth_match_three_win_model = MatchModel()
+        self.second_match_models = [MatchModel(), MatchModel()]
+        self.third_match_models = [MatchModel(), MatchModel(), MatchModel()]
+        self.fourth_match_models = [MatchModel(), MatchModel(), MatchModel(), MatchModel()]
 
         self.init_first_match_model()
 
@@ -182,31 +173,3 @@ class ContestModel:
                 self.first_match_model.add_match(Match(team_model_copy[i]))
             else:
                 self.first_match_model.add_match(Match(team_model_copy[i], team_model_copy[i + 1]))
-
-    def set_winner(self, team, model):
-        match = model.find_match_with_player(team)
-        match.set_finished(team)
-        team.win_count += 1
-
-        if model is self.first_match_model:
-            pass
-        elif model is self.second_match_no_win_model:
-            pass
-        elif model is self.second_match_one_win_model:
-            pass
-        elif model is self.third_match_no_win_model:
-            pass
-        elif model is self.third_match_one_win_model:
-            pass
-        elif model is self.third_match_two_win_model:
-            pass
-        elif model is self.fourth_match_no_win_model:
-            pass
-        elif model is self.fourth_match_one_win_model:
-            pass
-        elif model is self.fourth_match_two_win_model:
-            pass
-        elif model is self.fourth_match_three_win_model:
-            pass
-        else:
-            pass
