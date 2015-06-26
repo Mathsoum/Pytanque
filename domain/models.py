@@ -2,7 +2,7 @@ from enum import Enum
 from random import shuffle
 from PySide.QtCore import QAbstractItemModel, QModelIndex, Qt
 from PySide.QtGui import QBrush
-from domain.data_structures import Team, Match
+from domain.data_structures import Team, Match, Phase
 
 __author__ = 'msoum'
 
@@ -78,10 +78,34 @@ team_model = TeamModel()
 
 
 class MatchModel(QAbstractItemModel):
-    def __init__(self):
+    def __init__(self, phase):
         super(MatchModel, self).__init__()
         self.match_list = []
         self.team_list = []
+
+        # Compute match model size according to team count and current phase
+        if phase == Phase.FIRST:
+            self.team_count = len(team_model.team_list)
+        if phase == Phase.SECOND:
+            half = (self.team_count // 2)
+            self.second_one_win = half + (half % 2)
+            self.second_no_win = half - (half % 2)
+        if phase == Phase.THIRD:
+            half_one = self.second_one_win // 2
+            half_no = self.second_one_win // 2
+            self.third_two_win = half_one + (half_one % 2)
+            self.third_one_win = half_one - (half_one % 2) + half_no + (half_no % 2)
+            self.third_no_win = half_no - (half_no % 2)
+        if phase == Phase.FOURTH:
+            half_two = self.third_two_win // 2
+            half_one = self.third_one_win // 2
+            half_no = self.third_no_win // 2
+            self.fourth_three_win = half_two + (half_two % 2)
+            self.fourth_two_win = half_two - (half_two % 2) + half_one + (half_one % 2)
+            self.fourth_one_win = half_one - (half_one % 2) + half_no + (half_no % 2)
+            self.fourth_no_win = half_no - (half_no % 2)
+
+        self.team_data = {}
 
     def add_match(self, match):
         if match not in self.match_list:

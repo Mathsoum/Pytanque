@@ -22,6 +22,13 @@ class Team:
         return not self.__eq__(other)
 
 
+class Phase(Enum):
+    FIRST = 0
+    SECOND = 1
+    THIRD = 2
+    FOURTH = 3
+
+
 class MatchStatus(Enum):
     PLAYING = 0
     DONE = 1
