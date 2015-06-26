@@ -1,8 +1,9 @@
-from enum import Enum
+from enum import IntEnum
 from random import shuffle
+
 from PySide.QtCore import QAbstractItemModel, QModelIndex, Qt
-from PySide.QtGui import QBrush
-from domain.data_structures import Team, Match, Phase
+
+from domain.data_structures import Team, Match
 
 __author__ = 'msoum'
 
@@ -17,6 +18,11 @@ class TeamModel(QAbstractItemModel):
             Team('C', 'C'),
             Team('D', 'D'),
             Team('E', 'E'),
+            Team('F', 'F'),
+            Team('G', 'G'),
+            Team('H', 'H'),
+            Team('I', 'I'),
+            Team('J', 'J'),
         ]
 
     def columnCount(self, parent=QModelIndex):
@@ -78,72 +84,30 @@ team_model = TeamModel()
 
 
 class MatchModel(QAbstractItemModel):
-    def __init__(self, phase):
+    def __init__(self, team_count):
         super(MatchModel, self).__init__()
         self.match_list = []
         self.team_list = []
 
-        # Compute match model size according to team count and current phase
-        if phase == Phase.FIRST:
-            self.team_count = len(team_model.team_list)
-        if phase == Phase.SECOND:
-            half = (self.team_count // 2)
-            self.second_one_win = half + (half % 2)
-            self.second_no_win = half - (half % 2)
-        if phase == Phase.THIRD:
-            half_one = self.second_one_win // 2
-            half_no = self.second_one_win // 2
-            self.third_two_win = half_one + (half_one % 2)
-            self.third_one_win = half_one - (half_one % 2) + half_no + (half_no % 2)
-            self.third_no_win = half_no - (half_no % 2)
-        if phase == Phase.FOURTH:
-            half_two = self.third_two_win // 2
-            half_one = self.third_one_win // 2
-            half_no = self.third_no_win // 2
-            self.fourth_three_win = half_two + (half_two % 2)
-            self.fourth_two_win = half_two - (half_two % 2) + half_one + (half_one % 2)
-            self.fourth_one_win = half_one - (half_one % 2) + half_no + (half_no % 2)
-            self.fourth_no_win = half_no - (half_no % 2)
-
+        self.team_count = team_count
         self.team_data = {}
 
-    def add_match(self, match):
-        if match not in self.match_list:
-            self.match_list.append(match)
-
-    def add_team(self, team):
-        if team not in self.team_list:
-            self.team_list.append(team)
+        for i in range(0, self.team_count):
+            self.team_data[i] = None
 
     def columnCount(self, parent=QModelIndex):
         return 2
 
     def rowCount(self, parent=QModelIndex):
-        return len(self.match_list)
+        return self.team_count // 2
 
     def data(self, index, role=Qt.DisplayRole):
-        selected_match = self.match_list[index.row()]
         if role == Qt.DisplayRole:
-            if index.column() == 0:
-                return selected_match.first_team.name
-            if index.column() == 1:
-                return selected_match.second_team.name
+            return self.team_data[(index.column() * ((self.team_count // 2) - 1)) + index.row()]
         elif role == Qt.TextAlignmentRole:
             return Qt.AlignCenter
         elif role == Qt.BackgroundRole:
-            if selected_match.is_finished():
-                if selected_match.is_winner(selected_match.first_team):
-                    if index.column() == 0:
-                        return QBrush(Qt.green, Qt.Dense5Pattern)
-                    else:
-                        return QBrush(Qt.red, Qt.Dense5Pattern)
-                elif selected_match.is_winner(selected_match.second_team):
-                    if index.column() == 0:
-                        return QBrush(Qt.red, Qt.Dense5Pattern)
-                    else:
-                        return QBrush(Qt.green, Qt.Dense5Pattern)
-            else:
-                return None
+            return None
         else:
             return None
 
@@ -172,7 +136,7 @@ class MatchModel(QAbstractItemModel):
         return len([it for it in self.match_list if it.is_finished()])
 
 
-class ContestPhase(Enum):
+class ContestPhase(IntEnum):
     FIRST = 1
     SECOND = 2
     THIRD = 3
@@ -181,12 +145,47 @@ class ContestPhase(Enum):
 
 class ContestModel:
     def __init__(self):
-        self.first_match_model = MatchModel()
-        self.second_match_models = [MatchModel(), MatchModel()]
-        self.third_match_models = [MatchModel(), MatchModel(), MatchModel()]
-        self.fourth_match_models = [MatchModel(), MatchModel(), MatchModel(), MatchModel()]
 
-        self.init_first_match_model()
+        self.team_count = 0
+
+        # Compute match model size according to team count and current phase
+        # ContestPhase.FIRST:
+        first = len(team_model.team_list)
+        # ContestPhase.SECOND:
+        half = (first // 2)
+        second_one_win = half + (half % 2)
+        second_no_win = half - (half % 2)
+        # ContestPhase.THIRD:
+        half_one = second_one_win // 2
+        half_no = second_one_win // 2
+        third_two_win = half_one + (half_one % 2)
+        third_one_win = half_one - (half_one % 2) + half_no + (half_no % 2)
+        third_no_win = half_no - (half_no % 2)
+        # ContestPhase.FOURTH:
+        half_two = third_two_win // 2
+        half_one = third_one_win // 2
+        half_no = third_no_win // 2
+        fourth_three_win = half_two + (half_two % 2)
+        fourth_two_win = half_two - (half_two % 2) + half_one + (half_one % 2)
+        fourth_one_win = half_one - (half_one % 2) + half_no + (half_no % 2)
+        fourth_no_win = half_no - (half_no % 2)
+
+        self.first_match_model = MatchModel(first)
+        self.second_match_models = [
+            MatchModel(second_no_win),
+            MatchModel(second_one_win)
+        ]
+        self.third_match_models = [
+            MatchModel(third_no_win),
+            MatchModel(third_one_win),
+            MatchModel(third_two_win)
+        ]
+        self.fourth_match_models = [
+            MatchModel(fourth_no_win),
+            MatchModel(fourth_one_win),
+            MatchModel(fourth_two_win),
+            MatchModel(fourth_three_win)
+        ]
 
     def init_first_match_model(self):
         # Generate first match list

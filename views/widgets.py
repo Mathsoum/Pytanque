@@ -106,7 +106,7 @@ class ContestWidget(QWidget):
         for i in range(0, phase + 1):
             label = QLabel("({0}/{1})".format(phase - i, i))
             label.setAlignment(Qt.AlignCenter)
-            self.setup_view(self.contest_model.second_match_models[i], self.second_match_views[i])
+            self.setup_view(self.contest_model.second_match_models[phase - i], self.second_match_views[i])
             layout.addWidget(label)
             layout.addWidget(self.second_match_views[i])
 
@@ -121,7 +121,7 @@ class ContestWidget(QWidget):
         for i in range(0, phase + 1):
             label = QLabel("({0}/{1})".format(phase - i, i))
             label.setAlignment(Qt.AlignCenter)
-            self.setup_view(self.contest_model.third_match_models[i], self.third_match_views[i])
+            self.setup_view(self.contest_model.third_match_models[phase - i], self.third_match_views[i])
             layout.addWidget(label)
             layout.addWidget(self.third_match_views[i])
 
@@ -136,7 +136,7 @@ class ContestWidget(QWidget):
         for i in range(0, phase + 1):
             label = QLabel("({0}/{1})".format(phase - i, i))
             label.setAlignment(Qt.AlignCenter)
-            self.setup_view(self.contest_model.fourth_match_models[i], self.fourth_match_views[i])
+            self.setup_view(self.contest_model.fourth_match_models[phase - i], self.fourth_match_views[i])
             layout.addWidget(label)
             layout.addWidget(self.fourth_match_views[i])
 
