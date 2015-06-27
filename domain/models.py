@@ -1,5 +1,5 @@
 from enum import IntEnum
-from random import shuffle
+import random
 
 from PySide.QtCore import QAbstractItemModel, QModelIndex, Qt
 
@@ -89,27 +89,35 @@ class MatchModel(QAbstractItemModel):
         self.match_list = []
         self.team_list = []
 
-        self.team_count = team_count
-        self.team_data = {}
+        self.team_data = []
 
-        for i in range(0, self.team_count):
-            self.team_data[i] = None
+        for i in range(0, team_count):
+            self.team_data.append(None)
 
     def columnCount(self, parent=QModelIndex):
         return 2
 
     def rowCount(self, parent=QModelIndex):
-        return self.team_count // 2
+        return len(self.team_data) // 2
 
     def data(self, index, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
-            return self.team_data[(index.column() * ((self.team_count // 2) - 1)) + index.row()]
+            item = self.team_data[(index.column() * ((len(self.team_data) // 2) - 1)) + index.row()]
+            if item is None:
+                return "None"
+            else:
+                return item.name
         elif role == Qt.TextAlignmentRole:
             return Qt.AlignCenter
         elif role == Qt.BackgroundRole:
             return None
         else:
             return None
+
+    def get_match(self, row):
+        first_team_idx = row
+        second_team_idx = (len(self.team_data) // 2) - 1 + row
+        return Match(self.team_data[first_team_idx], self.team_data[second_team_idx])
 
     def index(self, row, column, parent=QModelIndex):
         return self.createIndex(row, column)
@@ -119,9 +127,6 @@ class MatchModel(QAbstractItemModel):
 
     def headerData(self, section, orientation, role):
         return None
-
-    def get_match(self, index):
-        return self.match_list[index]
 
     def find_match_with_player(self, player):
         return [it for it in self.match_list if it.first_team == player or it.second_team == player][0]
@@ -135,6 +140,25 @@ class MatchModel(QAbstractItemModel):
     def get_match_finished_count(self):
         return len([it for it in self.match_list if it.is_finished()])
 
+    def add_team(self, team):
+        rand_idx = self.__compute_random_index()
+        self.team_data[rand_idx] = team
+        index = self.create_index_from_data_index(rand_idx)
+        self.dataChanged.emit(index, index)
+
+    def create_index_from_data_index(self, idx):
+        team_count = len(self.team_data)
+        col = 1
+        if idx < team_count // 2:
+            col = 0
+        row = idx - (col * (team_count // 2))
+        print("Row %d // Col %d" % (row, col))
+        return self.index(row, col)
+
+    def __compute_random_index(self):
+        rand_idx = random.choice([i for i in range(0, len(self.team_data)) if self.team_data[i] is None])
+        print(rand_idx)
+        return rand_idx
 
 class ContestPhase(IntEnum):
     FIRST = 1
@@ -187,12 +211,11 @@ class ContestModel:
             MatchModel(fourth_three_win)
         ]
 
+        self.init_first_match_model()
+
     def init_first_match_model(self):
         # Generate first match list
-        team_model_copy = team_model.team_list
-        shuffle(team_model_copy)
-        for i in range(0, len(team_model_copy), 2):
-            if i == len(team_model_copy) - 1:
-                self.first_match_model.add_match(Match(team_model_copy[i]))
-            else:
-                self.first_match_model.add_match(Match(team_model_copy[i], team_model_copy[i + 1]))
+        team_list = list(team_model.team_list)
+        random.shuffle(team_list)
+        for team in team_list:
+            self.first_match_model.add_team(team)

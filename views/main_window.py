@@ -41,6 +41,8 @@ class MainWindow(QMainWindow):
         self.resize(500, 400)
 
     def start_contest(self):
+        self.generate_match_action.setEnabled(False)
+        self.team_menu.setEnabled(False)
         self.setCentralWidget(ContestWidget())
         self.resize(900, 700)
-
+        self.showMaximized()
