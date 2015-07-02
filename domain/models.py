@@ -2,6 +2,7 @@ from enum import IntEnum
 import random
 
 from PySide.QtCore import QAbstractItemModel, QModelIndex, Qt
+from PySide.QtGui import QBrush
 
 from domain.data_structures import Team, Match
 
@@ -101,16 +102,23 @@ class MatchModel(QAbstractItemModel):
         return len(self.team_data) // 2
 
     def data(self, index, role=Qt.DisplayRole):
+        team = self.team_data[(index.column() * ((len(self.team_data) // 2) - 1)) + index.row()]
+        other_team = self.team_data[(((index.column() + 1) % 2) * ((len(self.team_data) // 2) - 1)) + index.row()]
         if role == Qt.DisplayRole:
-            item = self.team_data[(index.column() * ((len(self.team_data) // 2) - 1)) + index.row()]
-            if item is None:
+            if team is None:
                 return "None"
             else:
-                return item.name
+                return team.name
         elif role == Qt.TextAlignmentRole:
             return Qt.AlignCenter
         elif role == Qt.BackgroundRole:
-            return None
+            if team is not None and other_team in team.played_against:
+                if team.played_against[other_team]:
+                    return QBrush(Qt.green, Qt.Dense5Pattern)
+                else:
+                    return QBrush(Qt.red, Qt.Dense5Pattern)
+            else:
+                return None
         else:
             return None
 
@@ -118,6 +126,9 @@ class MatchModel(QAbstractItemModel):
         first_team_idx = row
         second_team_idx = (len(self.team_data) // 2) - 1 + row
         return Match(self.team_data[first_team_idx], self.team_data[second_team_idx])
+
+    def get_raw_team(self, index):
+        return self.team_data[(index.column() * ((len(self.team_data) // 2) - 1)) + index.row()]
 
     def index(self, row, column, parent=QModelIndex):
         return self.createIndex(row, column)
@@ -131,11 +142,16 @@ class MatchModel(QAbstractItemModel):
     def find_match_with_player(self, player):
         return [it for it in self.match_list if it.first_team == player or it.second_team == player][0]
 
-    def set_winner(self, winner):
-        match = self.find_match_with_player(winner)
-        idx = self.match_list.index(match)
-        match.set_finished(winner)
-        self.dataChanged.emit(self.index(0, idx), self.index(1, idx))
+    def set_winner(self, row, first_column):
+        if first_column:
+            column = 0
+        else:
+            column = 1
+
+        winner_team = self.get_raw_team(self.index(row, column))
+        loser_team = self.get_raw_team(self.index(row, (column + 1) % 2))
+        winner_team.add_match(loser_team, True)
+        loser_team.add_match(winner_team, False)
 
     def get_match_finished_count(self):
         return len([it for it in self.match_list if it.is_finished()])
@@ -152,12 +168,10 @@ class MatchModel(QAbstractItemModel):
         if idx < team_count // 2:
             col = 0
         row = idx - (col * (team_count // 2))
-        print("Row %d // Col %d" % (row, col))
         return self.index(row, col)
 
     def __compute_random_index(self):
         rand_idx = random.choice([i for i in range(0, len(self.team_data)) if self.team_data[i] is None])
-        print(rand_idx)
         return rand_idx
 
 class ContestPhase(IntEnum):

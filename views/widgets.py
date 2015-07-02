@@ -202,11 +202,7 @@ class ContestWidget(QWidget):
         self.validate_button.setEnabled(self.button_group.checkedButton() is not None)
 
     def set_winner_validate_button_slot(self):
-        match = self.selected_table_view.model().get_match(self.selected_index)
-        if self.first_team_button.isChecked():
-            self.selected_table_view.model().set_winner(match.first_team)
-        else:
-            self.selected_table_view.model().set_winner(match.second_team)
+        self.selected_table_view.model().set_winner(self.selected_index, self.first_team_button.isChecked())
 
     def clear_selected_winner(self):
         self.button_group.setExclusive(False)
@@ -258,8 +254,6 @@ class RegistrationWidget(QWidget):
     def add_new_team_slot(self):
         dialog = TeamDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            print('OK dialog')
-            print(dialog.name_edit.text(), dialog.club_edit.text())
             self.model.add_team(dialog.name_edit.text(), dialog.club_edit.text())
 
     def edt_team_slot(self):

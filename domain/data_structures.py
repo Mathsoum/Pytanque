@@ -7,7 +7,10 @@ class Team:
     def __init__(self, name='NO_NAME', club='NO_CLUB'):
         self.name = name
         self.club = club
-        self.win_count = 0
+        self.played_against = {}
+
+    def add_match(self, other_team, has_win):
+        self.played_against[other_team] = has_win
 
     def __str__(self):
         return '{0} ({1})'.format(self.name, self.club)
@@ -17,6 +20,9 @@ class Team:
 
     def __eq__(self, other):
         return other.name == self.name and other.club == self.club
+
+    def __hash__(self, *args, **kwargs):
+        return hash((self.name, self.club))
 
     def __ne__(self, other):
         return not self.__eq__(other)
