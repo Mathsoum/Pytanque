@@ -4,7 +4,7 @@ import random
 from PySide.QtCore import QAbstractItemModel, QModelIndex, Qt
 from PySide.QtGui import QBrush
 
-from domain.data_structures import Team, Match
+from domain.data_structures import Team
 
 __author__ = 'msoum'
 
@@ -80,6 +80,12 @@ class TeamModel(QAbstractItemModel):
         self.team_list.pop(team_idx)
         self.endRemoveRows()
 
+    def get_team_from_name(self, name):
+        if name == "None":
+            return Team()
+        else:
+            return [it for it in self.team_list if it.name == name][0]
+
 
 team_model = TeamModel()
 
@@ -139,9 +145,6 @@ class MatchModel(QAbstractItemModel):
     def headerData(self, section, orientation, role):
         return None
 
-    def find_match_with_player(self, player):
-        return [it for it in self.match_list if it.first_team == player or it.second_team == player][0]
-
     def set_winner(self, row, first_column):
         if first_column:
             column = 0
@@ -152,9 +155,6 @@ class MatchModel(QAbstractItemModel):
         loser_team = self.get_raw_team(self.index(row, (column + 1) % 2))
         winner_team.add_match(loser_team, True)
         loser_team.add_match(winner_team, False)
-
-    def get_match_finished_count(self):
-        return len([it for it in self.match_list if it.is_finished()])
 
     def add_team(self, team):
         rand_idx = self.__compute_random_index()
@@ -175,6 +175,7 @@ class MatchModel(QAbstractItemModel):
         return rand_idx
 
 
+
 class ContestPhase(IntEnum):
     FIRST = 1
     SECOND = 2
@@ -184,7 +185,6 @@ class ContestPhase(IntEnum):
 
 class ContestModel:
     def __init__(self):
-
         self.team_count = 0
 
         # Compute match model size according to team count and current phase
@@ -209,22 +209,27 @@ class ContestModel:
         fourth_one_win = half_one - (half_one % 2) + half_no + (half_no % 2)
         fourth_no_win = half_no - (half_no % 2)
 
-        self.first_match_model = MatchModel(first)
-        self.second_match_models = [
-            MatchModel(second_no_win),
-            MatchModel(second_one_win)
-        ]
-        self.third_match_models = [
-            MatchModel(third_no_win),
-            MatchModel(third_one_win),
-            MatchModel(third_two_win)
-        ]
-        self.fourth_match_models = [
-            MatchModel(fourth_no_win),
-            MatchModel(fourth_one_win),
-            MatchModel(fourth_two_win),
-            MatchModel(fourth_three_win)
-        ]
+        self.match_models = (
+            (
+                MatchModel(first)
+            ),
+            (
+                MatchModel(second_no_win),
+                MatchModel(second_one_win)
+            ),
+            (
+                MatchModel(fourth_no_win),
+                MatchModel(fourth_one_win),
+                MatchModel(fourth_two_win),
+                MatchModel(fourth_three_win)
+            ),
+            (
+                MatchModel(fourth_no_win),
+                MatchModel(fourth_one_win),
+                MatchModel(fourth_two_win),
+                MatchModel(fourth_three_win)
+            )
+        )
 
         self.init_first_match_model()
 
@@ -233,4 +238,4 @@ class ContestModel:
         team_list = list(team_model.team_list)
         random.shuffle(team_list)
         for team in team_list:
-            self.first_match_model.add_team(team)
+            self.match_models[0].add_team(team)
