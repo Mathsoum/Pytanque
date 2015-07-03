@@ -125,7 +125,7 @@ class MatchModel(QAbstractItemModel):
     def get_match(self, row):
         first_team_idx = row
         second_team_idx = (len(self.team_data) // 2) - 1 + row
-        return Match(self.team_data[first_team_idx], self.team_data[second_team_idx])
+        return self.team_data[first_team_idx], self.team_data[second_team_idx]
 
     def get_raw_team(self, index):
         return self.team_data[(index.column() * ((len(self.team_data) // 2) - 1)) + index.row()]
@@ -173,6 +173,7 @@ class MatchModel(QAbstractItemModel):
     def __compute_random_index(self):
         rand_idx = random.choice([i for i in range(0, len(self.team_data)) if self.team_data[i] is None])
         return rand_idx
+
 
 class ContestPhase(IntEnum):
     FIRST = 1
