@@ -208,7 +208,14 @@ class ContestWidget(QWidget):
 
     def set_winner_validate_button_slot(self):
         # TODO Set winner when match is over. Use ContestModel as an interface to the correct MatchModel
-        pass
+        if self.first_team_button.isChecked():
+            self.contest_model.set_winner(
+                team_model.get_team_from_name(self.first_team_button.text().split(' (')[0])
+            )
+        else:
+            self.contest_model.set_winner(
+                team_model.get_team_from_name(self.second_team_button.text().split(' (')[0])
+            )
 
     def clear_selected_winner(self):
         self.button_group.setExclusive(False)

@@ -108,8 +108,9 @@ class MatchModel(QAbstractItemModel):
         return len(self.team_data) // 2
 
     def data(self, index, role=Qt.DisplayRole):
-        team = self.team_data[(index.column() * ((len(self.team_data) // 2) - 1)) + index.row()]
-        other_team = self.team_data[(((index.column() + 1) % 2) * ((len(self.team_data) // 2) - 1)) + index.row()]
+        half_team_count = (len(self.team_data) // 2)
+        team = self.team_data[(index.column() * half_team_count) + index.row()]
+        other_team = self.team_data[(((index.column() + 1) % 2) * half_team_count) + index.row()]
         if role == Qt.DisplayRole:
             if team is None:
                 return "None"
@@ -118,7 +119,7 @@ class MatchModel(QAbstractItemModel):
         elif role == Qt.TextAlignmentRole:
             return Qt.AlignCenter
         elif role == Qt.BackgroundRole:
-            if team is not None and other_team in team.played_against:
+            if team is not None and other_team in team.played_against.keys():
                 if team.played_against[other_team]:
                     return QBrush(Qt.green, Qt.Dense5Pattern)
                 else:
@@ -145,24 +146,25 @@ class MatchModel(QAbstractItemModel):
     def headerData(self, section, orientation, role):
         return None
 
-    def set_winner(self, row, first_column):
-        if first_column:
-            column = 0
+    def set_winner(self, winner, loser):
+        winner.add_match(loser, True)
+        loser.add_match(winner, False)
+        winner_idx = self.team_data.index(winner)
+        loser_idx = self.team_data.index(loser)
+        loser_model_idx = self.create_model_index_from_data_index(loser_idx)
+        winner_model_idx = self.create_model_index_from_data_index(winner_idx)
+        if winner_idx < loser_idx:
+            self.dataChanged.emit(winner_model_idx, loser_model_idx)
         else:
-            column = 1
-
-        winner_team = self.get_raw_team(self.index(row, column))
-        loser_team = self.get_raw_team(self.index(row, (column + 1) % 2))
-        winner_team.add_match(loser_team, True)
-        loser_team.add_match(winner_team, False)
+            self.dataChanged.emit(loser_model_idx, winner_model_idx)
 
     def add_team(self, team):
         rand_idx = self.__compute_random_index()
         self.team_data[rand_idx] = team
-        index = self.create_index_from_data_index(rand_idx)
+        index = self.create_model_index_from_data_index(rand_idx)
         self.dataChanged.emit(index, index)
 
-    def create_index_from_data_index(self, idx):
+    def create_model_index_from_data_index(self, idx):
         team_count = len(self.team_data)
         col = 1
         if idx < team_count // 2:
@@ -174,6 +176,15 @@ class MatchModel(QAbstractItemModel):
         rand_idx = random.choice([i for i in range(0, len(self.team_data)) if self.team_data[i] is None])
         return rand_idx
 
+    def get_opponent(self, team):
+        team_idx = self.team_data.index(team)
+        half_team_count = len(self.team_data) // 2
+        if team_idx < half_team_count:
+            opponent_idx = team_idx + half_team_count
+        else:
+            opponent_idx = team_idx - half_team_count
+
+        return self.team_data[opponent_idx]
 
 
 class ContestPhase(IntEnum):
@@ -239,3 +250,15 @@ class ContestModel:
         random.shuffle(team_list)
         for team in team_list:
             self.match_models[0].add_team(team)
+
+    def set_winner(self, team):
+        opponent = self.match_models[0].get_opponent(team)
+        if opponent is not None:
+            if opponent not in team.played_against:
+                model = self.match_models[0]
+                model.set_winner(team, opponent)
+            else:
+                # Next model
+                pass
+        else:
+            pass
