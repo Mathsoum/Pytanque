@@ -93,24 +93,21 @@ team_model = TeamModel()
 class MatchModel(QAbstractItemModel):
     def __init__(self, team_count):
         super(MatchModel, self).__init__()
-        self.match_list = []
         self.team_list = []
 
-        self.team_data = []
-
         for i in range(0, team_count):
-            self.team_data.append(None)
+            self.team_list.append(None)
 
     def columnCount(self, parent=QModelIndex):
         return 2
 
     def rowCount(self, parent=QModelIndex):
-        return len(self.team_data) // 2
+        return len(self.team_list) // 2
 
     def data(self, index, role=Qt.DisplayRole):
-        half_team_count = (len(self.team_data) // 2)
-        team = self.team_data[(index.column() * half_team_count) + index.row()]
-        other_team = self.team_data[(((index.column() + 1) % 2) * half_team_count) + index.row()]
+        half_team_count = (len(self.team_list) // 2)
+        team = self.team_list[(index.column() * half_team_count) + index.row()]
+        other_team = self.team_list[(((index.column() + 1) % 2) * half_team_count) + index.row()]
         if role == Qt.DisplayRole:
             if team is None:
                 return "None"
@@ -131,11 +128,11 @@ class MatchModel(QAbstractItemModel):
 
     def get_match(self, row):
         first_team_idx = row
-        second_team_idx = (len(self.team_data) // 2) - 1 + row
-        return self.team_data[first_team_idx], self.team_data[second_team_idx]
+        second_team_idx = (len(self.team_list) // 2) - 1 + row
+        return self.team_list[first_team_idx], self.team_list[second_team_idx]
 
     def get_raw_team(self, index):
-        return self.team_data[(index.column() * ((len(self.team_data) // 2) - 1)) + index.row()]
+        return self.team_list[(index.column() * ((len(self.team_list) // 2) - 1)) + index.row()]
 
     def index(self, row, column, parent=QModelIndex):
         return self.createIndex(row, column)
@@ -149,8 +146,8 @@ class MatchModel(QAbstractItemModel):
     def set_winner(self, winner, loser):
         winner.add_match(loser, True)
         loser.add_match(winner, False)
-        winner_idx = self.team_data.index(winner)
-        loser_idx = self.team_data.index(loser)
+        winner_idx = self.__get_list_idx(winner)
+        loser_idx = self.__get_list_idx(loser)
         loser_model_idx = self.create_model_index_from_data_index(loser_idx)
         winner_model_idx = self.create_model_index_from_data_index(winner_idx)
         if winner_idx < loser_idx:
@@ -159,13 +156,53 @@ class MatchModel(QAbstractItemModel):
             self.dataChanged.emit(loser_model_idx, winner_model_idx)
 
     def add_team(self, team):
-        rand_idx = self.__compute_random_index()
-        self.team_data[rand_idx] = team
-        index = self.create_model_index_from_data_index(rand_idx)
-        self.dataChanged.emit(index, index)
+        available_idx_list = [i for i in range(0, len(self.team_list)) if self.team_list[i] is None]
+        print("Available indexes : %s" % available_idx_list)
+        team_set = False
+        if len(available_idx_list) == 1:
+            opponent = self.team_list[self.get_opponent_idx(available_idx_list[0])]
+            if team in opponent.played_against.keys():
+                for item in self.team_list:
+                    if item is not None:
+                        if team not in item.played_against.keys() and item not in opponent.played_against.keys():
+                            self.team_list[available_idx_list[0]] = team
+                            team_idx = available_idx_list[0]
+                            item_idx = self.__get_list_idx(item)
+                            item_opponent_idx = self.get_opponent_idx(item_idx)
+                            print("Team : %s // Item : %s" % (
+                                self.team_list[team_idx], self.team_list[item_opponent_idx]))
+                            self.team_list[team_idx], self.team_list[item_opponent_idx] = \
+                                self.team_list[item_opponent_idx], self.team_list[team_idx]
+                            print("Swapping...")
+                            print("Team : %s // Item : %s" % (
+                                self.team_list[team_idx], self.team_list[item_opponent_idx]))
+                            team_index = self.create_model_index_from_data_index(team_idx)
+                            item_index = self.create_model_index_from_data_index(item_opponent_idx)
+                            self.dataChanged.emit(item_index, item_index)
+                            self.dataChanged.emit(team_index, team_index)
+                            team_set = True
+            else:
+                self.team_list[available_idx_list[0]] = team
+                item_index = self.create_model_index_from_data_index(available_idx_list[0])
+                self.dataChanged.emit(item_index, item_index)
+                team_set = True
+        else:
+            while not team_set and len(available_idx_list) > 0:
+                rand_idx = random.choice(available_idx_list)
+                opponent = self.team_list[self.get_opponent_idx(rand_idx)]
+                if opponent is not None and opponent in team.played_against.keys():
+                    available_idx_list.remove(rand_idx)
+                else:
+                    self.team_list[rand_idx] = team
+                    team_set = True
+                    index = self.create_model_index_from_data_index(rand_idx)
+                    self.dataChanged.emit(index, index)
+
+        print("Team set : %s" % team_set)
+        return team_set
 
     def create_model_index_from_data_index(self, idx):
-        team_count = len(self.team_data)
+        team_count = len(self.team_list)
         col = 1
         if idx < team_count // 2:
             col = 0
@@ -173,18 +210,41 @@ class MatchModel(QAbstractItemModel):
         return self.index(row, col)
 
     def __compute_random_index(self):
-        rand_idx = random.choice([i for i in range(0, len(self.team_data)) if self.team_data[i] is None])
+        rand_idx = random.choice([i for i in range(0, len(self.team_list)) if self.team_list[i] is None])
         return rand_idx
 
-    def get_opponent(self, team):
-        team_idx = self.team_data.index(team)
-        half_team_count = len(self.team_data) // 2
+    def get_opponent_idx(self, team_idx):
+        half_team_count = len(self.team_list) // 2
         if team_idx < half_team_count:
             opponent_idx = team_idx + half_team_count
         else:
             opponent_idx = team_idx - half_team_count
 
-        return self.team_data[opponent_idx]
+        return opponent_idx
+
+    def __get_list_idx(self, team):
+        for i in range(0, len(self.team_list)):
+            item = self.team_list[i]
+            if item is not None and item == team:
+                return i
+
+        return None
+
+    def get_opponent(self, team):
+        team_idx = self.__get_list_idx(team)
+        if team_idx is None:
+            return None
+
+        half_team_count = len(self.team_list) // 2
+        if team_idx < half_team_count:
+            opponent_idx = team_idx + half_team_count
+        else:
+            opponent_idx = team_idx - half_team_count
+
+        return self.team_list[opponent_idx]
+
+    def __contains__(self, item):
+        return item in self.team_list
 
 
 class ContestPhase(IntEnum):
@@ -207,7 +267,7 @@ class ContestModel:
         second_no_win = half - (half % 2)
         # ContestPhase.THIRD:
         half_one = second_one_win // 2
-        half_no = second_one_win // 2
+        half_no = second_no_win // 2
         third_two_win = half_one + (half_one % 2)
         third_one_win = half_one - (half_one % 2) + half_no + (half_no % 2)
         third_no_win = half_no - (half_no % 2)
@@ -220,6 +280,11 @@ class ContestModel:
         fourth_one_win = half_one - (half_one % 2) + half_no + (half_no % 2)
         fourth_no_win = half_no - (half_no % 2)
 
+        print(["1", first,
+               "2", second_no_win, second_one_win,
+               "3", third_no_win, third_one_win, third_two_win,
+               "4", fourth_no_win, fourth_one_win, fourth_two_win, fourth_three_win])
+
         self.match_models = (
             (
                 MatchModel(first)
@@ -229,10 +294,9 @@ class ContestModel:
                 MatchModel(second_one_win)
             ),
             (
-                MatchModel(fourth_no_win),
-                MatchModel(fourth_one_win),
-                MatchModel(fourth_two_win),
-                MatchModel(fourth_three_win)
+                MatchModel(third_no_win),
+                MatchModel(third_one_win),
+                MatchModel(third_two_win)
             ),
             (
                 MatchModel(fourth_no_win),
@@ -252,22 +316,31 @@ class ContestModel:
             self.match_models[0].add_team(team)
 
     def set_winner(self, team):
-        opponent = self.match_models[0].get_opponent(team)
         model_list = [self.match_models[0]]
         for model in self.match_models[1:]:
             model_list += model
 
         for model in model_list:
-            if opponent is not None:
-                if opponent not in team.played_against:
-                    model.set_winner(team, opponent)
-                    self.update_model(team)
-                    self.update_model(opponent)
-                    break
-                else:
-                    continue
+            opponent = model.get_opponent(team)
+            if opponent is not None and opponent not in team.played_against:
+                print("Set %s as winner against %s for model %s" % (team, opponent, model_list.index(model)))
+                model.set_winner(team, opponent)
+                self.update_model(team)
+                self.update_model(opponent)
+                break
 
     def update_model(self, team):
         played_count = len(team.played_against)
-        win_count = len([k for k, v in team.played_against.items() if v])
-        self.match_models[played_count][win_count].add_team(team)
+        init_win_count = len([k for k, v in team.played_against.items() if v])
+        max_win_count = played_count
+        is_team_set = False
+        win_count = init_win_count
+        while not is_team_set and win_count <= max_win_count:
+            is_team_set = self.match_models[played_count][win_count].add_team(team)
+            win_count += 1
+
+        if not is_team_set:
+            win_count = init_win_count - 1
+            while not is_team_set and win_count >= 0:
+                is_team_set = self.match_models[played_count][win_count].add_team(team)
+                win_count -= 0
