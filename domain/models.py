@@ -253,12 +253,21 @@ class ContestModel:
 
     def set_winner(self, team):
         opponent = self.match_models[0].get_opponent(team)
-        if opponent is not None:
-            if opponent not in team.played_against:
-                model = self.match_models[0]
-                model.set_winner(team, opponent)
-            else:
-                # Next model
-                pass
-        else:
-            pass
+        model_list = [self.match_models[0]]
+        for model in self.match_models[1:]:
+            model_list += model
+
+        for model in model_list:
+            if opponent is not None:
+                if opponent not in team.played_against:
+                    model.set_winner(team, opponent)
+                    self.update_model(team)
+                    self.update_model(opponent)
+                    break
+                else:
+                    continue
+
+    def update_model(self, team):
+        played_count = len(team.played_against)
+        win_count = len([k for k, v in team.played_against.items() if v])
+        self.match_models[played_count][win_count].add_team(team)
