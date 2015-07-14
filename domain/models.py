@@ -165,22 +165,19 @@ class MatchModel(QAbstractItemModel):
                 for item in self.team_list:
                     if item is not None:
                         item_opponent = self.get_opponent(item)
-                        if team not in item.played_against.keys() and item_opponent not in opponent.played_against.keys():
+                        if team not in item.played_against.keys() \
+                                and item_opponent not in opponent.played_against.keys():
                             self.team_list[available_idx_list[0]] = team
                             team_idx = available_idx_list[0]
                             item_opponent_idx = self.__get_list_idx(item_opponent)
-                            # print("Team : %s // Item : %s" % (
-                            #     self.team_list[team_idx], self.team_list[item_opponent_idx]))
-                            # print("Swapping...")
                             self.team_list[team_idx], self.team_list[item_opponent_idx] = \
                                 self.team_list[item_opponent_idx], self.team_list[team_idx]
-                            # print("Team : %s // Item : %s" % (
-                            #     self.team_list[team_idx], self.team_list[item_opponent_idx]))
                             team_index = self.create_model_index_from_data_index(team_idx)
                             item_index = self.create_model_index_from_data_index(item_opponent_idx)
                             self.dataChanged.emit(item_index, item_index)
                             self.dataChanged.emit(team_index, team_index)
                             team_set = True
+                            break
             else:
                 self.team_list[available_idx_list[0]] = team
                 item_index = self.create_model_index_from_data_index(available_idx_list[0])
@@ -198,7 +195,6 @@ class MatchModel(QAbstractItemModel):
                     index = self.create_model_index_from_data_index(rand_idx)
                     self.dataChanged.emit(index, index)
 
-        # print("Team set : %s" % team_set)
         return team_set
 
     def create_model_index_from_data_index(self, idx):
@@ -279,11 +275,6 @@ class ContestModel:
         fourth_two_win = half_two - (half_two % 2) + half_one + (half_one % 2)
         fourth_one_win = half_one - (half_one % 2) + half_no + (half_no % 2)
         fourth_no_win = half_no - (half_no % 2)
-
-        # print(["1", first,
-        #        "2", second_no_win, second_one_win,
-        #        "3", third_no_win, third_one_win, third_two_win,
-        #        "4", fourth_no_win, fourth_one_win, fourth_two_win, fourth_three_win])
 
         self.match_models = (
             (
