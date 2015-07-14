@@ -157,7 +157,7 @@ class MatchModel(QAbstractItemModel):
 
     def add_team(self, team):
         available_idx_list = [i for i in range(0, len(self.team_list)) if self.team_list[i] is None]
-        print("Available indexes : %s" % available_idx_list)
+        # print("Available indexes : %s" % available_idx_list)
         team_set = False
         if len(available_idx_list) == 1:
             opponent = self.team_list[self.get_opponent_idx(available_idx_list[0])]
@@ -169,13 +169,13 @@ class MatchModel(QAbstractItemModel):
                             self.team_list[available_idx_list[0]] = team
                             team_idx = available_idx_list[0]
                             item_opponent_idx = self.__get_list_idx(item_opponent)
-                            print("Team : %s // Item : %s" % (
-                                self.team_list[team_idx], self.team_list[item_opponent_idx]))
-                            print("Swapping...")
+                            # print("Team : %s // Item : %s" % (
+                            #     self.team_list[team_idx], self.team_list[item_opponent_idx]))
+                            # print("Swapping...")
                             self.team_list[team_idx], self.team_list[item_opponent_idx] = \
                                 self.team_list[item_opponent_idx], self.team_list[team_idx]
-                            print("Team : %s // Item : %s" % (
-                                self.team_list[team_idx], self.team_list[item_opponent_idx]))
+                            # print("Team : %s // Item : %s" % (
+                            #     self.team_list[team_idx], self.team_list[item_opponent_idx]))
                             team_index = self.create_model_index_from_data_index(team_idx)
                             item_index = self.create_model_index_from_data_index(item_opponent_idx)
                             self.dataChanged.emit(item_index, item_index)
@@ -198,7 +198,7 @@ class MatchModel(QAbstractItemModel):
                     index = self.create_model_index_from_data_index(rand_idx)
                     self.dataChanged.emit(index, index)
 
-        print("Team set : %s" % team_set)
+        # print("Team set : %s" % team_set)
         return team_set
 
     def create_model_index_from_data_index(self, idx):
@@ -280,10 +280,10 @@ class ContestModel:
         fourth_one_win = half_one - (half_one % 2) + half_no + (half_no % 2)
         fourth_no_win = half_no - (half_no % 2)
 
-        print(["1", first,
-               "2", second_no_win, second_one_win,
-               "3", third_no_win, third_one_win, third_two_win,
-               "4", fourth_no_win, fourth_one_win, fourth_two_win, fourth_three_win])
+        # print(["1", first,
+        #        "2", second_no_win, second_one_win,
+        #        "3", third_no_win, third_one_win, third_two_win,
+        #        "4", fourth_no_win, fourth_one_win, fourth_two_win, fourth_three_win])
 
         self.match_models = (
             (
@@ -323,7 +323,7 @@ class ContestModel:
         for model in model_list:
             opponent = model.get_opponent(team)
             if opponent is not None and opponent not in team.played_against:
-                print("Set %s as winner against %s for model %s" % (team, opponent, model_list.index(model)))
+                # print("Set %s as winner against %s for model %s" % (team, opponent, model_list.index(model)))
                 model.set_winner(team, opponent)
                 self.update_model(opponent)
                 self.update_model(team)

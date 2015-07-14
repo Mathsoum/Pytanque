@@ -1,6 +1,6 @@
 from PySide.QtCore import Qt
 from PySide.QtGui import QWidget, QLabel, QTableView, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QPushButton, \
-    QIcon, QAbstractItemView, QDialog, QMessageBox
+    QIcon, QAbstractItemView, QDialog, QMessageBox, QItemSelectionModel
 from domain.models import ContestModel, team_model
 from views.dialogs import TeamDialog
 
@@ -77,7 +77,6 @@ class ContestWidget(QWidget):
     def create_match_layout(self):
         match_layout = QHBoxLayout()
         for phase in range(0, 4):
-            print("Phase : %d" % phase)
             label = QLabel("Match #%d" % (phase + 1))
             label.setAlignment(Qt.AlignCenter)
             layout = QVBoxLayout()
@@ -91,7 +90,6 @@ class ContestWidget(QWidget):
                 for i in range(0, phase + 1):
                     label = QLabel("({0}/{1})".format(phase - i, i))
                     label.setAlignment(Qt.AlignCenter)
-                    print("Model : %d" % (phase - i))
                     self.setup_view(self.contest_model.match_models[phase][phase - i],
                                     self.match_views[phase][phase - i])
                     selection_model = self.match_views[phase][phase - i].selectionModel()
@@ -125,6 +123,18 @@ class ContestWidget(QWidget):
                 self.second_team_button.setChecked(True)
         else:
             self.clear_selected_winner()
+
+        self.clear_table_selection(selected)
+
+    def clear_table_selection(self, selected_index):
+        model = selected_index.model()
+        view = self.match_views[0]
+        if view.model() is not model:
+            view.clearSelection()
+        for phase in self.match_views[1:]:
+            for view in phase:
+                if view.model() is not model:
+                    view.clearSelection()
 
     def winner_selected_slot(self):
         # Enable/Disable validate button
