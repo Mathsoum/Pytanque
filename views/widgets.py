@@ -40,25 +40,13 @@ class ContestWidget(QWidget):
         self.button_group.addButton(self.second_team_button)
 
         # Table views & labels
-        self.first_match_view = QTableView()
-        self.second_match_views = [QTableView(), QTableView()]
-        self.third_match_views = [QTableView(), QTableView(), QTableView()]
-        self.fourth_match_views = [QTableView(), QTableView(), QTableView(), QTableView()]
-
-        # First round
-        first_match_layout = self.setup_first_match_view()
-        # Second round
-        second_match_layout = self.setup_second_match_view()
-        # Third round
-        third_match_layout = self.setup_third_match_view()
-        # Fourth round
-        fourth_match_layout = self.setup_forth_match_view()
-
-        match_layout = QHBoxLayout()
-        match_layout.addLayout(first_match_layout)
-        match_layout.addLayout(second_match_layout)
-        match_layout.addLayout(third_match_layout)
-        match_layout.addLayout(fourth_match_layout)
+        self.match_views = (
+            QTableView(),
+            [QTableView(), QTableView()],
+            [QTableView(), QTableView(), QTableView()],
+            [QTableView(), QTableView(), QTableView(), QTableView()]
+        )
+        match_layout = self.create_match_layout()
 
         # Winner selector layout
         winner_selector_layout = QHBoxLayout()
@@ -86,83 +74,34 @@ class ContestWidget(QWidget):
 
         self.setLayout(main_layout)
 
-    def setup_first_match_view(self):
-        label = QLabel("Match #1")
-        label.setAlignment(Qt.AlignCenter)
-        self.setup_view(self.contest_model.match_models[0], self.first_match_view)
-        selection_model = self.first_match_view.selectionModel()
-        selection_model.currentChanged.connect(self.selection_slot)
-        layout = QVBoxLayout()
-        layout.addWidget(label)
-        layout.addWidget(self.first_match_view)
-        return layout
-
-    def setup_second_match_view(self):
-        label = QLabel("Match #2")
-        label.setAlignment(Qt.AlignCenter)
-        layout = QVBoxLayout()
-        layout.addWidget(label)
-        phase = 1
-        for i in range(0, phase + 1):
-            label = QLabel("({0}/{1})".format(phase - i, i))
+    def create_match_layout(self):
+        match_layout = QHBoxLayout()
+        for phase in range(0, 4):
+            print("Phase : %d" % phase)
+            label = QLabel("Match #%d" % (phase + 1))
             label.setAlignment(Qt.AlignCenter)
-            self.setup_view(self.contest_model.match_models[1][phase - i], self.second_match_views[i])
-            selection_model = self.second_match_views[i].selectionModel()
-            selection_model.currentChanged.connect(self.selection_slot)
+            layout = QVBoxLayout()
             layout.addWidget(label)
-            layout.addWidget(self.second_match_views[i])
+            if phase == 0:
+                self.setup_view(self.contest_model.match_models[phase], self.match_views[0])
+                layout.addWidget(self.match_views[0])
+                selection_model = self.match_views[0].selectionModel()
+                selection_model.currentChanged.connect(self.selection_slot)
+            else:
+                for i in range(0, phase + 1):
+                    label = QLabel("({0}/{1})".format(phase - i, i))
+                    label.setAlignment(Qt.AlignCenter)
+                    print("Model : %d" % (phase - i))
+                    self.setup_view(self.contest_model.match_models[phase][phase - i],
+                                    self.match_views[phase][phase - i])
+                    selection_model = self.match_views[phase][phase - i].selectionModel()
+                    selection_model.currentChanged.connect(self.selection_slot)
+                    layout.addWidget(label)
+                    layout.addWidget(self.match_views[phase][phase - i])
 
-        return layout
+            match_layout.addLayout(layout)
 
-    def setup_third_match_view(self):
-        label = QLabel("Match #3")
-        label.setAlignment(Qt.AlignCenter)
-        layout = QVBoxLayout()
-        layout.addWidget(label)
-        phase = 2
-        for i in range(0, phase + 1):
-            label = QLabel("({0}/{1})".format(phase - i, i))
-            label.setAlignment(Qt.AlignCenter)
-            self.setup_view(self.contest_model.match_models[2][phase - i], self.third_match_views[i])
-            selection_model = self.third_match_views[i].selectionModel()
-            selection_model.currentChanged.connect(self.selection_slot)
-            layout.addWidget(label)
-            layout.addWidget(self.third_match_views[i])
-
-        return layout
-
-    def setup_forth_match_view(self):
-        label = QLabel("Match #4")
-        label.setAlignment(Qt.AlignCenter)
-        layout = QVBoxLayout()
-        layout.addWidget(label)
-        phase = 3
-        for i in range(0, phase + 1):
-            label = QLabel("({0}/{1})".format(phase - i, i))
-            label.setAlignment(Qt.AlignCenter)
-            self.setup_view(self.contest_model.match_models[3][phase - i], self.fourth_match_views[i])
-            selection_model = self.fourth_match_views[i].selectionModel()
-            selection_model.currentChanged.connect(self.selection_slot)
-            layout.addWidget(label)
-            layout.addWidget(self.fourth_match_views[i])
-
-        return layout
-
-    def selection_changed_first_view(self):
-        self.selected_table_view = self.first_match_view
-        self.selection_changed()
-
-    def selection_changed_second_view(self, phase):
-        self.selected_table_view = self.second_match_views[phase]
-        self.selection_changed()
-
-    def selection_changed_third_view(self, phase):
-        self.selected_table_view = self.third_match_views[phase]
-        self.selection_changed()
-
-    def selection_changed_fourth_view(self, phase):
-        self.selected_table_view = self.fourth_match_views[phase]
-        self.selection_changed()
+        return match_layout
 
     def selection_slot(self, selected):
         if selected.column() == 0:
@@ -175,21 +114,6 @@ class ContestWidget(QWidget):
         team_left = team_model.get_team_from_name(team_left_name)
         team_right = team_model.get_team_from_name(team_right_name)
 
-        self.first_team_button.setText(str(team_left))
-        self.second_team_button.setText(str(team_right))
-        self.first_team_button.setEnabled(True)
-        self.second_team_button.setEnabled(True)
-        if team_right is not None and team_left is not None and team_right in team_left.played_against:
-            if team_left.played_against[team_right]:
-                self.first_team_button.setChecked(True)
-            else:
-                self.second_team_button.setChecked(True)
-        else:
-            self.clear_selected_winner()
-
-    def selection_changed(self):
-        self.selected_index = self.selected_table_view.currentIndex().row()
-        team_left, team_right = self.selected_table_view.model().get_match(self.selected_index)
         self.first_team_button.setText(str(team_left))
         self.second_team_button.setText(str(team_right))
         self.first_team_button.setEnabled(True)
