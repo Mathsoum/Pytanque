@@ -164,16 +164,16 @@ class MatchModel(QAbstractItemModel):
             if team in opponent.played_against.keys():
                 for item in self.team_list:
                     if item is not None:
-                        if team not in item.played_against.keys() and item not in opponent.played_against.keys():
+                        item_opponent = self.get_opponent(item)
+                        if team not in item.played_against.keys() and item_opponent not in opponent.played_against.keys():
                             self.team_list[available_idx_list[0]] = team
                             team_idx = available_idx_list[0]
-                            item_idx = self.__get_list_idx(item)
-                            item_opponent_idx = self.get_opponent_idx(item_idx)
+                            item_opponent_idx = self.__get_list_idx(item_opponent)
                             print("Team : %s // Item : %s" % (
                                 self.team_list[team_idx], self.team_list[item_opponent_idx]))
+                            print("Swapping...")
                             self.team_list[team_idx], self.team_list[item_opponent_idx] = \
                                 self.team_list[item_opponent_idx], self.team_list[team_idx]
-                            print("Swapping...")
                             print("Team : %s // Item : %s" % (
                                 self.team_list[team_idx], self.team_list[item_opponent_idx]))
                             team_index = self.create_model_index_from_data_index(team_idx)
@@ -325,12 +325,15 @@ class ContestModel:
             if opponent is not None and opponent not in team.played_against:
                 print("Set %s as winner against %s for model %s" % (team, opponent, model_list.index(model)))
                 model.set_winner(team, opponent)
-                self.update_model(team)
                 self.update_model(opponent)
+                self.update_model(team)
                 break
 
     def update_model(self, team):
         played_count = len(team.played_against)
+        if played_count == 4:
+            return
+
         init_win_count = len([k for k, v in team.played_against.items() if v])
         max_win_count = played_count
         is_team_set = False
