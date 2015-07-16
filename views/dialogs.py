@@ -42,7 +42,7 @@ class ContestStatusDialog(QDialog):
 
         self.setWindowTitle('Contest status')
 
-        team_list_copy = list(team_list)
+        team_list_copy = sorted(team_list, key=lambda it: it.number)
         if Team('###', '###') in team_list_copy:
             team_list_copy.remove(Team('###', '###'))
 
