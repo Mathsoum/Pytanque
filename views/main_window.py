@@ -37,7 +37,7 @@ class MainWindow(QMainWindow):
         self.team_del_action.triggered.connect(central_widget.del_team_slot)
 
         # Setup main window
-        self.setWindowTitle('Pétanque')
+        self.setWindowTitle('Pytanque')
         self.resize(500, 400)
 
     def start_contest(self):
