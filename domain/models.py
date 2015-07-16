@@ -24,6 +24,7 @@ class TeamModel(QAbstractItemModel):
             Team('H', 'H'),
             Team('I', 'I'),
             Team('J', 'J'),
+            Team('K', 'K'),
         ]
 
     def columnCount(self, parent=QModelIndex):
@@ -83,6 +84,8 @@ class TeamModel(QAbstractItemModel):
     def get_team_from_name(self, name):
         if name == "None":
             return Team()
+        if name == "###":
+            return Team("###", "###")
         else:
             return [it for it in self.team_list if it.name == name][0]
 
@@ -257,6 +260,8 @@ class ContestModel:
         # Compute match model size according to team count and current phase
         # ContestPhase.FIRST:
         first = len(team_model.team_list)
+        generate_exempt = first % 2 == 1
+        first += first % 2
         # ContestPhase.SECOND:
         half = (first // 2)
         second_one_win = half + (half % 2)
@@ -297,14 +302,20 @@ class ContestModel:
             )
         )
 
-        self.init_first_match_model()
+        self.init_first_match_model(generate_exempt)
 
-    def init_first_match_model(self):
+    def init_first_match_model(self, generate_exempt):
         # Generate first match list
         team_list = list(team_model.team_list)
+        exempt_team = Team("###", "###")
+        if generate_exempt:
+            team_list.append(exempt_team)
         random.shuffle(team_list)
         for team in team_list:
             self.match_models[0].add_team(team)
+
+        if generate_exempt:
+            self.set_winner(self.match_models[0].get_opponent(exempt_team))
 
     def set_winner(self, team):
         model_list = [self.match_models[0]]
@@ -328,13 +339,21 @@ class ContestModel:
         init_win_count = len([k for k, v in team.played_against.items() if v])
         max_win_count = played_count
         is_team_set = False
-        win_count = init_win_count
-        while not is_team_set and win_count <= max_win_count:
-            is_team_set = self.match_models[played_count][win_count].add_team(team)
+        win_count = init_win_count - 1
+        while not is_team_set and win_count < max_win_count:
             win_count += 1
+            is_team_set = self.match_models[played_count][win_count].add_team(team)
 
         if not is_team_set:
-            win_count = init_win_count - 1
-            while not is_team_set and win_count >= 0:
+            win_count = init_win_count
+            while not is_team_set and win_count > 0:
+                win_count -= 1
                 is_team_set = self.match_models[played_count][win_count].add_team(team)
-                win_count -= 0
+
+        if is_team_set:
+            model = self.match_models[played_count][win_count]
+            if team.name == "###" and model.get_opponent(team) is not None:
+                self.set_winner(model.get_opponent(team))
+            if model.get_opponent(team) is not None and model.get_opponent(team).name == "###":
+                self.set_winner(team)
+            pass
