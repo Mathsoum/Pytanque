@@ -50,13 +50,16 @@ class ContestStatusDialog(QDialog):
         self.create_header_line(layout)
         for team in team_list_copy:
             row = team_list_copy.index(team) + 1
+            num = QLabel(str(team.number))
+            num.setAlignment(Qt.AlignCenter)
+            layout.addWidget(num, row, 0)
             name = QLabel(team.name)
             name.setAlignment(Qt.AlignCenter)
-            layout.addWidget(name, row, 0)
+            layout.addWidget(name, row, 1)
             club = QLabel(team.club)
             club.setAlignment(Qt.AlignCenter)
-            layout.addWidget(club, row, 1)
-            col = 2
+            layout.addWidget(club, row, 2)
+            col = 3
             win_count = 0
             lose_count = 0
             for k, v in team.played_against.items():
@@ -74,7 +77,7 @@ class ContestStatusDialog(QDialog):
                 layout.addWidget(label, row, col)
                 col += 1
 
-            for i in range(col, 6):
+            for i in range(col, 7):
                 layout.addWidget(QLabel(), row, i)
 
             layout.addWidget(QLabel('(%d,%d)' % (win_count, lose_count)))
@@ -83,25 +86,28 @@ class ContestStatusDialog(QDialog):
 
     @staticmethod
     def create_header_line(layout):
+        num = QLabel('N°')
+        num.setAlignment(Qt.AlignCenter)
+        layout.addWidget(num, 0, 0)
         name = QLabel('Name')
         name.setAlignment(Qt.AlignCenter)
-        layout.addWidget(name, 0, 0)
+        layout.addWidget(name, 0, 1)
         club = QLabel('Club')
         club.setAlignment(Qt.AlignCenter)
-        layout.addWidget(club, 0, 1)
+        layout.addWidget(club, 0, 2)
         match1 = QLabel('#1')
         match1.setAlignment(Qt.AlignCenter)
-        layout.addWidget(match1, 0, 2)
+        layout.addWidget(match1, 0, 3)
         match2 = QLabel('#2')
         match2.setAlignment(Qt.AlignCenter)
-        layout.addWidget(match2, 0, 3)
+        layout.addWidget(match2, 0, 4)
         match3 = QLabel('#3')
         match3.setAlignment(Qt.AlignCenter)
-        layout.addWidget(match3, 0, 4)
+        layout.addWidget(match3, 0, 5)
         match4 = QLabel('#4')
         match4.setAlignment(Qt.AlignCenter)
-        layout.addWidget(match4, 0, 5)
+        layout.addWidget(match4, 0, 6)
         total = QLabel('Total')
         total.setAlignment(Qt.AlignCenter)
-        layout.addWidget(total, 0, 6)
+        layout.addWidget(total, 0, 7)
 
