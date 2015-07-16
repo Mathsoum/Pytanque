@@ -1,6 +1,7 @@
 from PySide.QtCore import Qt
 from PySide.QtGui import QWidget, QLabel, QTableView, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QPushButton, \
-    QIcon, QAbstractItemView, QDialog, QMessageBox, QItemSelectionModel
+    QIcon, QAbstractItemView, QDialog, QMessageBox
+
 from domain.models import ContestModel, team_model
 from views.dialogs import TeamDialog
 
