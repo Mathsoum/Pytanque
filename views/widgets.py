@@ -3,7 +3,7 @@ from PySide.QtGui import QWidget, QLabel, QTableView, QVBoxLayout, QHBoxLayout, 
     QIcon, QAbstractItemView, QDialog, QMessageBox
 
 from domain.models import ContestModel, team_model
-from views.dialogs import TeamDialog
+from views.dialogs import TeamDialog, ContestStatusDialog
 
 __author__ = 'msoum'
 
@@ -156,6 +156,10 @@ class ContestWidget(QWidget):
             button.setChecked(False)
 
         self.button_group.setExclusive(True)
+
+    def show_status_view(self):
+        dialog = ContestStatusDialog(self.contest_model.team_list)
+        dialog.exec_()
 
 
 class RegistrationWidget(QWidget):

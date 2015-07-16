@@ -256,6 +256,7 @@ class ContestPhase(IntEnum):
 class ContestModel:
     def __init__(self):
         self.team_count = 0
+        self.team_list = []
 
         # Compute match model size according to team count and current phase
         # ContestPhase.FIRST:
@@ -306,12 +307,12 @@ class ContestModel:
 
     def init_first_match_model(self, generate_exempt):
         # Generate first match list
-        team_list = list(team_model.team_list)
+        self.team_list = list(team_model.team_list)
         exempt_team = Team("###", "###")
         if generate_exempt:
-            team_list.append(exempt_team)
-        random.shuffle(team_list)
-        for team in team_list:
+            self.team_list.append(exempt_team)
+        random.shuffle(self.team_list)
+        for team in self.team_list:
             self.match_models[0].add_team(team)
 
         if generate_exempt:

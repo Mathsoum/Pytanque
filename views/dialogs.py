@@ -1,4 +1,5 @@
-from PySide.QtGui import QDialog, QLineEdit, QFormLayout, QDialogButtonBox, QHBoxLayout, QVBoxLayout
+from PySide.QtGui import QDialog, QLineEdit, QFormLayout, QDialogButtonBox, QHBoxLayout, QVBoxLayout, QGridLayout, \
+    QLabel
 
 __author__ = 'msoum'
 
@@ -31,3 +32,29 @@ class TeamDialog(QDialog):
         dialog_layout.addLayout(button_box_layout)
 
         self.setLayout(dialog_layout)
+
+
+class ContestStatusDialog(QDialog):
+    def __init__(self, team_list, parent=None):
+        super(ContestStatusDialog, self).__init__(parent)
+
+        self.setWindowTitle('Contest status')
+
+        layout = QGridLayout()
+        self.create_header_line(layout)
+        for team in team_list:
+            layout.addWidget(QLabel(team.name), team_list.index(team) + 1, 0)
+            layout.addWidget(QLabel(team.club), team_list.index(team) + 1, 1)
+
+        self.setLayout(layout)
+
+    @staticmethod
+    def create_header_line(layout):
+        layout.addWidget(QLabel('Name'), 0, 0)
+        layout.addWidget(QLabel('Club'), 0, 1)
+        layout.addWidget(QLabel('#1'), 0, 2)
+        layout.addWidget(QLabel('#2'), 0, 3)
+        layout.addWidget(QLabel('#3'), 0, 4)
+        layout.addWidget(QLabel('#4'), 0, 5)
+        layout.addWidget(QLabel('Total'), 0, 5)
+
