@@ -14,17 +14,17 @@ class TeamModel(QAbstractItemModel):
         super(TeamModel, self).__init__()
 
         self.team_list = [
-            Team('A', 'A'),
-            Team('B', 'B'),
-            Team('C', 'C'),
-            Team('D', 'D'),
-            Team('E', 'E'),
-            Team('F', 'F'),
-            Team('G', 'G'),
-            Team('H', 'H'),
-            Team('I', 'I'),
-            Team('J', 'J'),
-            Team('K', 'K'),
+            Team('A', 'A', 1),
+            Team('B', 'B', 2),
+            Team('C', 'C', 3),
+            Team('D', 'D', 4),
+            Team('E', 'E', 5),
+            Team('F', 'F', 6),
+            Team('G', 'G', 7),
+            Team('H', 'H', 8),
+            Team('I', 'I', 9),
+            Team('J', 'J', 10),
+            Team('K', 'K', 11),
         ]
 
     def columnCount(self, parent=QModelIndex):
@@ -63,7 +63,8 @@ class TeamModel(QAbstractItemModel):
 
     def add_team(self, name, club):
         self.beginInsertRows(QModelIndex(), len(self.team_list), len(self.team_list))
-        self.team_list.append(Team(name, club))
+        team = Team(name, club, len(self.team_list))
+        self.team_list.append(team)
         self.endInsertRows()
 
     def get_team(self, row):
@@ -72,7 +73,7 @@ class TeamModel(QAbstractItemModel):
     def update_team(self, team, new_name, new_club):
         self.beginResetModel()
         team_idx = self.team_list.index(team)
-        self.team_list[team_idx] = Team(new_name, new_club)
+        self.team_list[team_idx] = Team(new_name, new_club, team.number)
         self.endResetModel()
 
     def delete_team(self, team):
@@ -246,16 +247,10 @@ class MatchModel(QAbstractItemModel):
         return item in self.team_list
 
 
-class ContestPhase(IntEnum):
-    FIRST = 1
-    SECOND = 2
-    THIRD = 3
-    FOURTH = 4
-
-
 class ContestModel:
     def __init__(self):
         self.team_count = 0
+        self.team_list = []
 
         # Compute match model size according to team count and current phase
         # ContestPhase.FIRST:
@@ -306,12 +301,12 @@ class ContestModel:
 
     def init_first_match_model(self, generate_exempt):
         # Generate first match list
-        team_list = list(team_model.team_list)
+        self.team_list = list(team_model.team_list)
         exempt_team = Team("###", "###")
         if generate_exempt:
-            team_list.append(exempt_team)
-        random.shuffle(team_list)
-        for team in team_list:
+            self.team_list.append(exempt_team)
+        random.shuffle(self.team_list)
+        for team in self.team_list:
             self.match_models[0].add_team(team)
 
         if generate_exempt:

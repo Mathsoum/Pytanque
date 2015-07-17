@@ -4,7 +4,8 @@ __author__ = 'Mathieu'
 
 
 class Team:
-    def __init__(self, name='NO_NAME', club='NO_CLUB'):
+    def __init__(self, name='NO_NAME', club='NO_CLUB', number=0):
+        self.number = number
         self.name = name
         self.club = club
         self.played_against = {}
@@ -26,6 +27,9 @@ class Team:
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def __repr__(self):
+        return repr((self.name, self.club, self.number))
 
 
 class MatchStatus(Enum):

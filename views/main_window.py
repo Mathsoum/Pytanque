@@ -25,6 +25,12 @@ class MainWindow(QMainWindow):
         self.team_menu.addAction(self.team_edt_action)
         self.team_menu.addAction(self.team_del_action)
 
+        # View menu
+        self.view_menu = menu_bar.addMenu('V&iew')
+        self.status_action = QAction('Show s&tatus...', self)
+        self.view_menu.addAction(self.status_action)
+        self.status_action.setEnabled(False)
+
         # Central widget
         central_widget = RegistrationWidget()
         central_widget.set_model(team_model)
@@ -43,6 +49,9 @@ class MainWindow(QMainWindow):
     def start_contest(self):
         self.generate_match_action.setEnabled(False)
         self.team_menu.setEnabled(False)
-        self.setCentralWidget(ContestWidget())
+        self.status_action.setEnabled(True)
+        contest_widget = ContestWidget()
+        self.setCentralWidget(contest_widget)
+        self.status_action.triggered.connect(contest_widget.show_status_view)
         self.resize(900, 700)
         self.showMaximized()
