@@ -31,6 +31,14 @@ class ReverseBinaryGraph:
             left = self.leaves[0].parent
             right = self.leaves[2].parent
             self.set_parent(left, right, self.leaves[0].parent.parent)
+        elif len(self.leaves) == 5:
+            left = self.leaves[0].parent
+            right = self.leaves[4]
+            self.set_parent(left, right)
+            left = self.leaves[4].parent
+            right = self.leaves[2].parent
+            self.set_parent(left, right, self.leaves[2].parent.parent)
+            pass
 
     @staticmethod
     def set_parent(left, right, parent=Vertex()):
