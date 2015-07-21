@@ -62,3 +62,9 @@ class TestReverseBinaryGraph(TestCase):
         self.assertIs(self.graph.leaves[2].parent, self.graph.leaves[3].parent)
         self.assertIs(self.graph.leaves[4].parent, self.graph.leaves[5].parent)
         self.assertIs(self.graph.leaves[4].parent.parent, self.graph.leaves[6].parent)
+
+    def test_large_number_of_leaves(self):
+        self.graph = ReverseBinaryGraph(range(1, 10001))
+        self.assertEqual(10000, len(self.graph.leaves))
+        for node in [it.parent for it in self.graph.leaves]:
+            self.assertIsNotNone(node)
