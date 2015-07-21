@@ -2,12 +2,11 @@ __author__ = 'msoum'
 
 
 class Vertex:
-    def __init__(self):
+    def __init__(self, data=None):
         self.parent = None
         self.left = None
         self.right = None
-
-        self.data = None
+        self.data = data
 
 
 class ReverseBinaryGraph:
@@ -15,7 +14,7 @@ class ReverseBinaryGraph:
         self.leaves = []
 
     def add_leave(self, data):
-        self.leaves.append(data)
+        self.leaves.append(Vertex(data))
         if len(self.leaves) == 2:
             left = self.leaves[0]
             right = self.leaves[1]
@@ -38,7 +37,6 @@ class ReverseBinaryGraph:
             left = self.leaves[4].parent
             right = self.leaves[2].parent
             self.set_parent(left, right, self.leaves[2].parent.parent)
-            pass
 
     @staticmethod
     def set_parent(left, right, parent=Vertex()):
