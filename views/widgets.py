@@ -2,7 +2,7 @@ from PySide.QtCore import Qt
 from PySide.QtGui import QWidget, QLabel, QTableView, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QPushButton, \
     QIcon, QAbstractItemView, QDialog, QMessageBox
 
-from domain.models import ContestModel, team_model
+from domain.four_matches.models import ContestModel, team_model
 from views.dialogs import TeamDialog, ContestStatusDialog
 
 __author__ = 'msoum'
@@ -225,3 +225,8 @@ class RegistrationWidget(QWidget):
     def selected_team(self):
         selected_index = self.table_view.selectionModel().currentIndex().row()
         return self.model.get_team(selected_index)
+
+
+class ChampionshipWidget(QWidget):
+    def __init__(self, parent=None):
+        super(ChampionshipWidget, self).__init__(parent)

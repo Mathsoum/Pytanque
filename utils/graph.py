@@ -17,16 +17,16 @@ class ReverseBinaryGraph:
     def build_tree(self, leaves_list):
         if len(leaves_list) == 0:
             return Vertex()
-        if len(leaves_list) == 1:  # End of recursion
+        if len(leaves_list) == 1:
             leave = Vertex(leaves_list[0])
             idx = self.leaves.index(leaves_list[0])
             self.leaves[idx] = leave
-            return leave  # Return a simple vertex as sub-root
-        else:  # Recursion for build sub-trees TODO Sub-trees construction could be computed in parallel
+            return leave
+        else:  # TODO Sub-trees construction could be computed in parallel
             left_list, right_list = self.split_leave_list(leaves_list)
             left_root = self.build_tree(left_list)
             right_root = self.build_tree(right_list)
-            return self.create_parent(left_root, right_root) #  Return freshly build tree
+            return self.create_parent(left_root, right_root)
 
     def split_leave_list(self, leaves_list):
         power, rest = self.power_two_decomposition(len(leaves_list))
@@ -59,3 +59,10 @@ class ReverseBinaryGraph:
                 power *= 2
 
             return previous, number - previous
+
+    def level_count(self):
+        level_count = 1
+        leave = self.leaves[0]
+        while leave.parent is not None:
+            level_count += 1
+            leave = leave.parent
