@@ -1,6 +1,7 @@
-from PySide.QtCore import Qt
+from PySide.QtCore import Qt, QLine
 from PySide.QtGui import QWidget, QLabel, QTableView, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QPushButton, \
-    QIcon, QAbstractItemView, QDialog, QMessageBox
+    QIcon, QAbstractItemView, QDialog, QMessageBox, QGridLayout, QPainter, QColor
+from domain.championship.models import ChampionshipModel
 
 from domain.four_matches.models import ContestModel, team_model
 from views.dialogs import TeamDialog, ContestStatusDialog
@@ -230,3 +231,95 @@ class RegistrationWidget(QWidget):
 class ChampionshipWidget(QWidget):
     def __init__(self, parent=None):
         super(ChampionshipWidget, self).__init__(parent)
+
+        self.__grid = QGridLayout()
+        self.model = ChampionshipModel(team_model.team_list)
+        self.init_ui()
+
+    def init_ui(self):
+        leave_count = len(self.model.graph.leaves)
+        for i in range(0, (leave_count * 2) - 1):
+            if i % 2 == 0:
+                label = QLabel(str(self.model.graph.leaves[i // 2]))
+                label.setMaximumWidth(125)
+                label.setAlignment(Qt.AlignCenter)
+                self.__grid.addWidget(label, i, 0)
+                self.__grid.addWidget(HorizontalLine(self.__grid, i, 1), i, 1)
+
+        self.setLayout(self.__grid)
+
+    def add_widget(self, widget, row, column):
+        self.__grid.addWidget(widget, row, column)
+
+
+class CustomWidget(QWidget):
+    def __init__(self, grid, row, column, parent=None):
+        super(CustomWidget, self).__init__(parent)
+        self.grid = grid
+        self.idx = (row, column)
+
+    def paintEvent(self, *args, **kwargs):
+        qp = QPainter()
+        qp.begin(self)
+        self.draw_rectangle(qp)
+        qp.end()
+
+
+class WestToSouth(CustomWidget):
+    def __init__(self, grid, row, column, parent=None):
+        super(WestToSouth, self).__init__(grid, row, column, parent)
+
+    def draw_rectangle(self, qp):
+        color = QColor(0, 0, 0)
+        qp.setPen(color)
+        rect = self.grid.cellRect(self.idx[0], self.idx[1])
+        qp.drawLine(QLine(0, rect.height() // 2, rect.width() // 2, rect.height() // 2))
+        qp.drawLine(QLine(rect.width() // 2, rect.height() // 2, rect.width() // 2, rect.height()))
+
+
+class WestToNorth(CustomWidget):
+    def __init__(self, grid, row, column, parent=None):
+        super(WestToNorth, self).__init__(grid, row, column, parent)
+
+    def draw_rectangle(self, qp):
+        color = QColor(0, 0, 0)
+        qp.setPen(color)
+        rect = self.grid.cellRect(self.idx[0], self.idx[1])
+        qp.drawLine(QLine(0, rect.height() // 2, rect.width() // 2, rect.height() // 2))
+        qp.drawLine(QLine(rect.width() // 2, rect.height() // 2, rect.width() // 2, 0))
+
+
+class TShaped(CustomWidget):
+    def __init__(self, grid, row, column, parent=None):
+        super(TShaped, self).__init__(grid, row, column, parent)
+
+    def draw_rectangle(self, qp):
+        color = QColor(0, 0, 0)
+        qp.setPen(color)
+        rect = self.grid.cellRect(self.idx[0], self.idx[1])
+        qp.drawLine(QLine(rect.width() // 2, 0, rect.width() // 2, rect.height()))
+        qp.drawLine(QLine(rect.width() // 2, rect.height() // 2, rect.width(), rect.height() // 2))
+
+
+class VerticalLine(CustomWidget):
+    def __init__(self, grid, row, column, parent=None):
+        super(VerticalLine, self).__init__(grid, row, column, parent)
+
+    def draw_rectangle(self, qp):
+        color = QColor(0, 0, 0)
+        qp.setPen(color)
+        rect = self.grid.cellRect(self.idx[0], self.idx[1])
+        qp.drawLine(QLine(rect.width() // 2, 0, rect.width() // 2, rect.height()))
+
+
+class HorizontalLine(CustomWidget):
+    def __init__(self, grid, row, column, parent=None):
+        super(HorizontalLine, self).__init__(grid, row, column, parent)
+
+    def draw_rectangle(self, qp):
+        color = QColor(0, 0, 0)
+        qp.setPen(color)
+        rect = self.grid.cellRect(self.idx[0], self.idx[1])
+        qp.drawLine(QLine(0, rect.height() // 2, rect.width(), rect.height() // 2))
+
+

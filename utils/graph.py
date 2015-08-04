@@ -8,10 +8,13 @@ class Vertex:
         self.right = None
         self.data = data
 
+    def __str__(self):
+        return str(self.data)
+
 
 class ReverseBinaryGraph:
     def __init__(self, leaves_list):
-        self.leaves = list(leaves_list)
+        self.leaves = [Vertex(it) for it in leaves_list]
         self.build_tree(leaves_list)
 
     def build_tree(self, leaves_list):
@@ -19,7 +22,8 @@ class ReverseBinaryGraph:
             return Vertex()
         if len(leaves_list) == 1:
             leave = Vertex(leaves_list[0])
-            idx = self.leaves.index(leaves_list[0])
+            data_list = [it.data for it in self.leaves]
+            idx = data_list.index(leaves_list[0])
             self.leaves[idx] = leave
             return leave
         else:  # TODO Sub-trees construction could be computed in parallel
