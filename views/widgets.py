@@ -238,15 +238,92 @@ class ChampionshipWidget(QWidget):
 
     def init_ui(self):
         leave_count = len(self.model.graph.leaves)
+        # self.__grid.setHorizontalSpacing(0)
+        # self.__grid.setVerticalSpacing(0)
         for i in range(0, (leave_count * 2) - 1):
             if i % 2 == 0:
-                label = QLabel(str(self.model.graph.leaves[i // 2]))
-                label.setMaximumWidth(125)
-                label.setAlignment(Qt.AlignCenter)
+                label = self.create_team_label(str(self.model.graph.leaves[i // 2]))
                 self.__grid.addWidget(label, i, 0)
-                self.__grid.addWidget(HorizontalLine(self.__grid, i, 1), i, 1)
+                # self.__grid.addWidget(HorizontalLine(self.__grid, i, 1), i, 1)
 
+        self.add_bracket(0, 1)
+        self.add_bracket(4, 1)
+        self.add_bracket(8, 1)
+        self.add_bracket(12, 1)
+        self.add_bracket(16, 1)
+
+        self.add_line(20, 1, 2)
+        self.add_bottom_bracket(17, 3)
+
+        self.add_high_bracket(1, 3)
+        self.add_high_bracket(9, 3)
+
+        self.add_big_high_bracket(3, 5)
+
+        self.add_final_bracket(7, 7)
+
+        self.add_line(19, 5, 2)
         self.setLayout(self.__grid)
+
+    def add_bracket(self, top, left):
+        self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
+        self.__grid.addWidget(TShaped(self.__grid, top + 1, left), top + 1, left)
+        self.__grid.addWidget(WestToNorth(self.__grid, top + 2, left), top + 2, left)
+        self.__grid.addWidget(self.create_team_label('Something'), top + 1, left + 1)
+
+    def add_high_bracket(self, top, left):
+        self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 1, left), top + 1, left)
+        self.__grid.addWidget(TShaped(self.__grid, top + 2, left), top + 2, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 3, left), top + 3, left)
+        self.__grid.addWidget(WestToNorth(self.__grid, top + 4, left), top + 4, left)
+        self.__grid.addWidget(self.create_team_label('Something'), top + 2, left + 1)
+
+    def add_big_high_bracket(self, top, left):
+        self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 1, left), top + 1, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 2, left), top + 2, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 3, left), top + 3, left)
+        self.__grid.addWidget(TShaped(self.__grid, top + 4, left), top + 4, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 5, left), top + 5, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 6, left), top + 6, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 7, left), top + 7, left)
+        self.__grid.addWidget(WestToNorth(self.__grid, top + 8, left), top + 8, left)
+        self.__grid.addWidget(self.create_team_label('Something'), top + 4, left + 1)
+
+    def add_bottom_bracket(self, top, left):
+        self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 1, left), top + 1, left)
+        self.__grid.addWidget(TShaped(self.__grid, top + 2, left), top + 2, left)
+        self.__grid.addWidget(WestToNorth(self.__grid, top + 3, left), top + 3, left)
+        self.__grid.addWidget(self.create_team_label('Something'), top + 2, left + 1)
+
+    def add_final_bracket(self, top, left):
+        self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 1, left), top + 1, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 2, left), top + 2, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 3, left), top + 3, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 4, left), top + 4, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 5, left), top + 5, left)
+        self.__grid.addWidget(TShaped(self.__grid, top + 6, left), top + 6, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 7, left), top + 7, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 8, left), top + 8, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 9, left), top + 9, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 10, left), top + 10, left)
+        self.__grid.addWidget(VerticalLine(self.__grid, top + 11, left), top + 11, left)
+        self.__grid.addWidget(WestToNorth(self.__grid, top + 12, left), top + 12, left)
+        self.__grid.addWidget(self.create_team_label('Something'), top + 6, left + 1)
+
+    def add_line(self, top, left, length):
+        for i in range(0, length):
+            self.__grid.addWidget(HorizontalLine(self.__grid, top, left + i), top, left + i)
+
+    @staticmethod
+    def create_team_label(label_text):
+        label = QLabel(label_text)
+        label.setMaximumWidth(125)
+        label.setAlignment(Qt.AlignCenter)
+        return label
 
     def add_widget(self, widget, row, column):
         self.__grid.addWidget(widget, row, column)
