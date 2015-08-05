@@ -232,28 +232,18 @@ class ChampionshipWidget(QWidget):
     def __init__(self, parent=None):
         super(ChampionshipWidget, self).__init__(parent)
 
+        self.leave_list = []
         self.__grid = QGridLayout()
         self.model = ChampionshipModel(team_model.team_list)
+        self.make_leave_list()
         self.init_ui()
 
     def init_ui(self):
         leave_count = len(self.model.graph.leaves)
         # self.__grid.setHorizontalSpacing(0)
         # self.__grid.setVerticalSpacing(0)
-        for i in range(0, (leave_count * 2) - 1):
-            if i % 2 == 0:
-                label = self.create_team_label(str(self.model.graph.leaves[i // 2]))
-                self.__grid.addWidget(label, i, 0)
-                # self.__grid.addWidget(HorizontalLine(self.__grid, i, 1), i, 1)
-
-        leave_list = []
-        top = 0
-        left = 0
-        for leave in self.model.graph.leaves:
-            leave_list.append((leave, top, left))
-            top += 2
-
-        self.draw_bracket(leave_list)
+        self.setup_first_column(leave_count)
+        self.draw_bracket(self.leave_list)
 
         # self.add_bracket(0, 1)
         # self.add_bracket(4, 1)
@@ -273,6 +263,19 @@ class ChampionshipWidget(QWidget):
         #
         # self.add_line(19, 5, 2)
         self.setLayout(self.__grid)
+
+    def setup_first_column(self, leave_count):
+        for i in range(0, (leave_count * 2) - 1):
+            if i % 2 == 0:
+                label = self.create_team_label(str(self.model.graph.leaves[i // 2]))
+                self.__grid.addWidget(label, i, 0)
+
+    def make_leave_list(self):
+        top = 0
+        left = 0
+        for leave in self.model.graph.leaves:
+            self.leave_list.append((leave, top, left))
+            top += 2
 
     def draw_bracket(self, data_list):
         graph = self.model.graph
@@ -296,6 +299,7 @@ class ChampionshipWidget(QWidget):
         top += 1
         self.__grid.addWidget(TShaped(self.__grid, top, left), top, left)
         self.__grid.addWidget(self.create_team_label(str(winner)), top, left + 1)
+        self.leave_list.append((winner, top, left + 1))
         for i in range(0, height // 2):
             top += 1
             self.__grid.addWidget(VerticalLine(self.__grid, top, left), top, left)
