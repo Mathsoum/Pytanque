@@ -282,15 +282,25 @@ class ChampionshipWidget(QWidget):
             if item not in drawn_list:
                 sibling = graph.get_sibling(item[0])
                 if sibling in [it[0] for it in data_list]:
-                    self.add_bracket(item[1], item[2] + 1)
+                    sibling_tuple = [it for it in data_list if it[0] == sibling][0]
+                    self.add_bracket(item[1], sibling_tuple[1], item[2] + 1, item[0].parent)
                     drawn_list.append(item)
-                    drawn_list.append([it for it in data_list if it[0] == sibling][0])
+                    drawn_list.append(sibling_tuple)
 
-    def add_bracket(self, top, left):
+    def add_bracket(self, top, bottom, left, winner):
         self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
-        self.__grid.addWidget(TShaped(self.__grid, top + 1, left), top + 1, left)
-        self.__grid.addWidget(WestToNorth(self.__grid, top + 2, left), top + 2, left)
-        self.__grid.addWidget(self.create_team_label('Something'), top + 1, left + 1)
+        height = bottom - top - 2
+        for i in range(0, height // 2):
+            top += 1
+            self.__grid.addWidget(VerticalLine(self.__grid, top, left), top, left)
+        top += 1
+        self.__grid.addWidget(TShaped(self.__grid, top, left), top, left)
+        self.__grid.addWidget(self.create_team_label(str(winner)), top, left + 1)
+        for i in range(0, height // 2):
+            top += 1
+            self.__grid.addWidget(VerticalLine(self.__grid, top, left), top, left)
+        top += 1
+        self.__grid.addWidget(WestToNorth(self.__grid, top, left), top, left)
 
     def add_high_bracket(self, top, left):
         self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
