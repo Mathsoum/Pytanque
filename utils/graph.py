@@ -71,6 +71,14 @@ class ReverseBinaryGraph:
             level_count += 1
             leave = leave.parent
 
+        return level_count
+
+    def get_node_list_for_level(self, level):
+        if level > 0:
+            return self.leaves
+        else:
+            return set([it.parent for it in self.get_node_list_for_level(level - 1)])
+
     def get_sibling(self, vertex):
         return self.__get_sibling(vertex, self.leaves)
 
