@@ -246,24 +246,45 @@ class ChampionshipWidget(QWidget):
                 self.__grid.addWidget(label, i, 0)
                 # self.__grid.addWidget(HorizontalLine(self.__grid, i, 1), i, 1)
 
-        self.add_bracket(0, 1)
-        self.add_bracket(4, 1)
-        self.add_bracket(8, 1)
-        self.add_bracket(12, 1)
-        self.add_bracket(16, 1)
+        leave_list = []
+        top = 0
+        left = 0
+        for leave in self.model.graph.leaves:
+            leave_list.append((leave, top, left))
+            top += 2
 
-        self.add_line(20, 1, 2)
-        self.add_bottom_bracket(17, 3)
+        self.draw_bracket(leave_list)
 
-        self.add_high_bracket(1, 3)
-        self.add_high_bracket(9, 3)
-
-        self.add_big_high_bracket(3, 5)
-
-        self.add_final_bracket(7, 7)
-
-        self.add_line(19, 5, 2)
+        # self.add_bracket(0, 1)
+        # self.add_bracket(4, 1)
+        # self.add_bracket(8, 1)
+        # self.add_bracket(12, 1)
+        # self.add_bracket(16, 1)
+        #
+        # self.add_line(20, 1, 2)
+        # self.add_bottom_bracket(17, 3)
+        #
+        # self.add_high_bracket(1, 3)
+        # self.add_high_bracket(9, 3)
+        #
+        # self.add_big_high_bracket(3, 5)
+        #
+        # self.add_final_bracket(7, 7)
+        #
+        # self.add_line(19, 5, 2)
         self.setLayout(self.__grid)
+
+    def draw_bracket(self, data_list):
+        graph = self.model.graph
+        drawn_list = []
+        for item in data_list:
+            print('Drawn list : ' + str([str(it[0]) for it in drawn_list]))
+            if item not in drawn_list:
+                sibling = graph.get_sibling(item[0])
+                if sibling in [it[0] for it in data_list]:
+                    self.add_bracket(item[1], item[2] + 1)
+                    drawn_list.append(item)
+                    drawn_list.append([it for it in data_list if it[0] == sibling][0])
 
     def add_bracket(self, top, left):
         self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
