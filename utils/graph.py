@@ -11,6 +11,12 @@ class Vertex:
     def __str__(self):
         return str(self.data)
 
+    def __hash__(self):
+        return hash(self.parent) + hash(self.left) + hash(self.right) + hash(self.data)
+
+    def __eq__(self, other):
+        return other.parent is self.parent and other.left is self.left and other.right is self.right and other.data == self.data
+
 
 class ReverseBinaryGraph:
     def __init__(self, leaves_list):
@@ -74,7 +80,7 @@ class ReverseBinaryGraph:
         return level_count
 
     def get_node_list_for_level(self, level):
-        if level > 0:
+        if level == 0:
             return self.leaves
         else:
             return set([it.parent for it in self.get_node_list_for_level(level - 1)])
@@ -83,6 +89,9 @@ class ReverseBinaryGraph:
         return self.__get_sibling(vertex, self.leaves)
 
     def __get_sibling(self, vertex, leaves):
+        if vertex.parent is None:
+            return None
+
         if vertex not in leaves:
             parents = []
             for item in leaves:

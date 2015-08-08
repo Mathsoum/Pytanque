@@ -1,3 +1,4 @@
+import pprint
 from PySide.QtCore import Qt, QLine
 from PySide.QtGui import QWidget, QLabel, QTableView, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QPushButton, \
     QIcon, QAbstractItemView, QDialog, QMessageBox, QGridLayout, QPainter, QColor
@@ -228,10 +229,15 @@ class RegistrationWidget(QWidget):
         return self.model.get_team(selected_index)
 
 
+def get_parent_list(local_list):
+    return set([it[0].parent for it in local_list])
+
+
 class ChampionshipWidget(QWidget):
     def __init__(self, parent=None):
         super(ChampionshipWidget, self).__init__(parent)
 
+        self.data = {}
         self.leave_list = []
         self.__grid = QGridLayout()
         self.model = ChampionshipModel(team_model.team_list)
@@ -271,17 +277,44 @@ class ChampionshipWidget(QWidget):
                 self.__grid.addWidget(label, i, 0)
 
     def make_leave_list(self):
+        graph = self.model.graph
+        for i in range(0, graph.level_count()):
+            self.data[i] = []
+
         top = 0
         left = 0
-        for leave in self.model.graph.leaves:
-            self.leave_list.append((leave, top, left))
+        self.data[0] = []
+        for leave in graph.leaves:
+            self.data[0].append((leave, top, left))
             top += 2
+
+        for level in range(0, graph.level_count()):
+            print('Building level', level)
+            for item in self.data[level]:
+                sibling = graph.get_sibling(item[0])
+                if sibling is not None and sibling in [it[0] for it in self.data[level]]:  # Classic
+                    sibling_tuple = [it for it in self.data[level] if it[0] == sibling][0]
+                    parent = item[0].parent
+                    if item[0].parent not in [it[0] for it in self.data[level + 1]]:
+                        if sibling_tuple[1] < item[1]:
+                            new_tuple = (parent, item[1] - (level ** 2), item[2] + 2)
+                            self.data[level + 1].append(new_tuple)
+                            self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
+                        else:
+                            new_tuple = (parent, item[1] + (level ** 2), item[2] + 2)
+                            self.data[level + 1].append(new_tuple)
+                            self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
+                elif item[0].parent is not None and item[0].parent not in [it[0] for it in self.data[level + 1]]:  # No sibling and parent not set
+                    new_tuple = (item[0].parent, item[1] - level ** 2, item[2] + 4)
+                    self.data[level + 1].append(new_tuple)
+                    self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
+
+            pprint.pprint(self.data)
 
     def draw_bracket(self, data_list):
         graph = self.model.graph
         drawn_list = []
         for item in data_list:
-            print('Drawn list : ' + str([str(it[0]) for it in drawn_list]))
             if item not in drawn_list:
                 sibling = graph.get_sibling(item[0])
                 if sibling in [it[0] for it in data_list]:
@@ -299,7 +332,6 @@ class ChampionshipWidget(QWidget):
         top += 1
         self.__grid.addWidget(TShaped(self.__grid, top, left), top, left)
         self.__grid.addWidget(self.create_team_label(str(winner)), top, left + 1)
-        self.leave_list.append((winner, top, left + 1))
         for i in range(0, height // 2):
             top += 1
             self.__grid.addWidget(VerticalLine(self.__grid, top, left), top, left)
@@ -433,5 +465,3 @@ class HorizontalLine(CustomWidget):
         qp.setPen(color)
         rect = self.grid.cellRect(self.idx[0], self.idx[1])
         qp.drawLine(QLine(0, rect.height() // 2, rect.width(), rect.height() // 2))
-
-
