@@ -249,7 +249,7 @@ class ChampionshipWidget(QWidget):
         # self.__grid.setHorizontalSpacing(0)
         # self.__grid.setVerticalSpacing(0)
         self.setup_first_column(leave_count)
-        self.draw_bracket(self.leave_list)
+        self.draw_bracket(self.data[0])
 
         # self.add_bracket(0, 1)
         # self.add_bracket(4, 1)
@@ -292,24 +292,30 @@ class ChampionshipWidget(QWidget):
             print('Building level', level)
             for item in self.data[level]:
                 sibling = graph.get_sibling(item[0])
+                print('Item :', item[0], '(sibling', sibling, ')')
                 if sibling is not None and sibling in [it[0] for it in self.data[level]]:  # Classic
                     sibling_tuple = [it for it in self.data[level] if it[0] == sibling][0]
                     parent = item[0].parent
                     if item[0].parent not in [it[0] for it in self.data[level + 1]]:
                         if sibling_tuple[1] < item[1]:
-                            new_tuple = (parent, item[1] - (level ** 2), item[2] + 2)
+                            print(sibling_tuple[1], '<', item[1])
+                            new_tuple = (parent, item[1] - (2 ** level), item[2] + 2)
+                            print(' > New tuple :', str(new_tuple[0]), new_tuple[1:])
                             self.data[level + 1].append(new_tuple)
                             self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
                         else:
-                            new_tuple = (parent, item[1] + (level ** 2), item[2] + 2)
+                            print(sibling_tuple[1], '>=', item[1])
+                            new_tuple = (parent, item[1] + (2 ** level), item[2] + 2)
+                            print(' >> New tuple :', str(new_tuple[0]), new_tuple[1:])
                             self.data[level + 1].append(new_tuple)
                             self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
                 elif item[0].parent is not None and item[0].parent not in [it[0] for it in self.data[level + 1]]:  # No sibling and parent not set
-                    new_tuple = (item[0].parent, item[1] - level ** 2, item[2] + 4)
+                    new_tuple = (item[0].parent, item[1] - (2 ** level), item[2] + 4)
+                    print('New tuple :', str(new_tuple[0]), new_tuple[1:])
                     self.data[level + 1].append(new_tuple)
                     self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
 
-            pprint.pprint(self.data)
+            # pprint.pprint(self.data)
 
     def draw_bracket(self, data_list):
         graph = self.model.graph

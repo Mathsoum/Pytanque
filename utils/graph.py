@@ -103,7 +103,7 @@ class ReverseBinaryGraph:
         else:
             for item in leaves:
                 if item is vertex:
-                    print('Item : ' + str(item))
+                    # print('Item : ' + str(item))
                     if item.parent.left is item:
                         print(' > Sibling of ' + str(vertex) + ' is ' + str(item.parent.right))
                         return item.parent.right
