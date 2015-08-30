@@ -98,15 +98,11 @@ class ReverseBinaryGraph:
                 if item.parent not in parents:
                     parents.append(item.parent)
             sibling = self.__get_sibling(vertex, parents)
-            print('Sibling of ' + str(vertex) + ' is ' + str(sibling))
             return sibling
         else:
             for item in leaves:
                 if item is vertex:
-                    # print('Item : ' + str(item))
                     if item.parent.left is item:
-                        print(' > Sibling of ' + str(vertex) + ' is ' + str(item.parent.right))
                         return item.parent.right
                     elif item.parent.right is item:
-                        print(' >> Sibling of ' + str(vertex) + ' is ' + str(item.parent.left))
                         return item.parent.left

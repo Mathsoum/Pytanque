@@ -246,28 +246,7 @@ class ChampionshipWidget(QWidget):
 
     def init_ui(self):
         leave_count = len(self.model.graph.leaves)
-        # self.__grid.setHorizontalSpacing(0)
-        # self.__grid.setVerticalSpacing(0)
         self.setup_first_column(leave_count)
-        self.draw_bracket(self.data[0])
-
-        # self.add_bracket(0, 1)
-        # self.add_bracket(4, 1)
-        # self.add_bracket(8, 1)
-        # self.add_bracket(12, 1)
-        # self.add_bracket(16, 1)
-        #
-        # self.add_line(20, 1, 2)
-        # self.add_bottom_bracket(17, 3)
-        #
-        # self.add_high_bracket(1, 3)
-        # self.add_high_bracket(9, 3)
-        #
-        # self.add_big_high_bracket(3, 5)
-        #
-        # self.add_final_bracket(7, 7)
-        #
-        # self.add_line(19, 5, 2)
         self.setLayout(self.__grid)
 
     def setup_first_column(self, leave_count):
@@ -292,103 +271,43 @@ class ChampionshipWidget(QWidget):
             print('Building level', level)
             for item in self.data[level]:
                 sibling = graph.get_sibling(item[0])
-                print('Item :', item[0], '(sibling', sibling, ')')
+                print('Item :', item[0], str((item[1], item[2])), '( sibling', sibling, ')')
                 if sibling is not None and sibling in [it[0] for it in self.data[level]]:  # Classic
                     sibling_tuple = [it for it in self.data[level] if it[0] == sibling][0]
                     parent = item[0].parent
                     if item[0].parent not in [it[0] for it in self.data[level + 1]]:
                         if sibling_tuple[1] < item[1]:
-                            print(sibling_tuple[1], '<', item[1])
                             new_tuple = (parent, item[1] - (2 ** level), item[2] + 2)
-                            print(' > New tuple :', str(new_tuple[0]), new_tuple[1:])
                             self.data[level + 1].append(new_tuple)
+                            self.add_bracket(sibling_tuple[1], item[1], new_tuple[1], item[2] + 1)
                             self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
                         else:
-                            print(sibling_tuple[1], '>=', item[1])
                             new_tuple = (parent, item[1] + (2 ** level), item[2] + 2)
-                            print(' >> New tuple :', str(new_tuple[0]), new_tuple[1:])
                             self.data[level + 1].append(new_tuple)
+                            self.add_bracket(item[1], sibling_tuple[1], new_tuple[1], item[2] + 1)
                             self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
-                elif item[0].parent is not None and item[0].parent not in [it[0] for it in self.data[level + 1]]:  # No sibling and parent not set
+                elif item[0].parent is not None and item[0].parent not in [it[0] for it in self.data[level + 1]]:
                     new_tuple = (item[0].parent, item[1] - (2 ** level), item[2] + 4)
-                    print('New tuple :', str(new_tuple[0]), new_tuple[1:])
-                    self.data[level + 1].append(new_tuple)
+                    self.data[level + 2].append(new_tuple)
                     self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
 
-            # pprint.pprint(self.data)
-
-    def draw_bracket(self, data_list):
-        graph = self.model.graph
-        drawn_list = []
-        for item in data_list:
-            if item not in drawn_list:
-                sibling = graph.get_sibling(item[0])
-                if sibling in [it[0] for it in data_list]:
-                    sibling_tuple = [it for it in data_list if it[0] == sibling][0]
-                    self.add_bracket(item[1], sibling_tuple[1], item[2] + 1, item[0].parent)
-                    drawn_list.append(item)
-                    drawn_list.append(sibling_tuple)
-
-    def add_bracket(self, top, bottom, left, winner):
+    def add_bracket(self, top, bottom, middle, left):
         self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
-        height = bottom - top - 2
-        for i in range(0, height // 2):
+        top_height = middle - top - 1
+        for i in range(0, top_height):
             top += 1
             self.__grid.addWidget(VerticalLine(self.__grid, top, left), top, left)
         top += 1
         self.__grid.addWidget(TShaped(self.__grid, top, left), top, left)
-        self.__grid.addWidget(self.create_team_label(str(winner)), top, left + 1)
-        for i in range(0, height // 2):
+        bottom_height = bottom - middle - 1
+        for i in range(0, bottom_height):
             top += 1
             self.__grid.addWidget(VerticalLine(self.__grid, top, left), top, left)
         top += 1
         self.__grid.addWidget(WestToNorth(self.__grid, top, left), top, left)
 
-    def add_high_bracket(self, top, left):
-        self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 1, left), top + 1, left)
-        self.__grid.addWidget(TShaped(self.__grid, top + 2, left), top + 2, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 3, left), top + 3, left)
-        self.__grid.addWidget(WestToNorth(self.__grid, top + 4, left), top + 4, left)
-        self.__grid.addWidget(self.create_team_label('Something'), top + 2, left + 1)
-
-    def add_big_high_bracket(self, top, left):
-        self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 1, left), top + 1, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 2, left), top + 2, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 3, left), top + 3, left)
-        self.__grid.addWidget(TShaped(self.__grid, top + 4, left), top + 4, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 5, left), top + 5, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 6, left), top + 6, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 7, left), top + 7, left)
-        self.__grid.addWidget(WestToNorth(self.__grid, top + 8, left), top + 8, left)
-        self.__grid.addWidget(self.create_team_label('Something'), top + 4, left + 1)
-
-    def add_bottom_bracket(self, top, left):
-        self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 1, left), top + 1, left)
-        self.__grid.addWidget(TShaped(self.__grid, top + 2, left), top + 2, left)
-        self.__grid.addWidget(WestToNorth(self.__grid, top + 3, left), top + 3, left)
-        self.__grid.addWidget(self.create_team_label('Something'), top + 2, left + 1)
-
-    def add_final_bracket(self, top, left):
-        self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 1, left), top + 1, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 2, left), top + 2, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 3, left), top + 3, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 4, left), top + 4, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 5, left), top + 5, left)
-        self.__grid.addWidget(TShaped(self.__grid, top + 6, left), top + 6, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 7, left), top + 7, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 8, left), top + 8, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 9, left), top + 9, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 10, left), top + 10, left)
-        self.__grid.addWidget(VerticalLine(self.__grid, top + 11, left), top + 11, left)
-        self.__grid.addWidget(WestToNorth(self.__grid, top + 12, left), top + 12, left)
-        self.__grid.addWidget(self.create_team_label('Something'), top + 6, left + 1)
-
-    def add_line(self, top, left, length):
-        for i in range(0, length):
+    def add_line(self, top, left):
+        for i in range(0, 2):
             self.__grid.addWidget(HorizontalLine(self.__grid, top, left + i), top, left + i)
 
     @staticmethod
