@@ -290,6 +290,9 @@ class ChampionshipWidget(QWidget):
                     new_tuple = (item[0].parent, item[1] - (2 ** level), item[2] + 4)
                     self.data[level + 2].append(new_tuple)
                     self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
+                    self.add_line(item[1], item[2] + 1)
+                    sibling_tuple = [it for it in self.data[level + 1] if it[0] == sibling][0]
+                    self.add_bracket(sibling_tuple[1], item[1], new_tuple[1], sibling_tuple[2] + 1)
 
     def add_bracket(self, top, bottom, middle, left):
         self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
