@@ -1,4 +1,5 @@
 import pprint
+from random import shuffle
 from PySide.QtCore import Qt, QLine
 from PySide.QtGui import QWidget, QLabel, QTableView, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QPushButton, \
     QIcon, QAbstractItemView, QDialog, QMessageBox, QGridLayout, QPainter, QColor
@@ -240,7 +241,9 @@ class ChampionshipWidget(QWidget):
         self.data = {}
         self.leave_list = []
         self.__grid = QGridLayout()
-        self.model = ChampionshipModel(team_model.team_list)
+        local_team_list = list(team_model.team_list)
+        shuffle(local_team_list)
+        self.model = ChampionshipModel(local_team_list)
         self.make_leave_list()
         self.init_ui()
 
@@ -268,10 +271,8 @@ class ChampionshipWidget(QWidget):
             top += 2
 
         for level in range(0, graph.level_count()):
-            print('Building level', level)
             for item in self.data[level]:
                 sibling = graph.get_sibling(item[0])
-                print('Item :', item[0], str((item[1], item[2])), '( sibling', sibling, ')')
                 if sibling is not None and sibling in [it[0] for it in self.data[level]]:  # Classic
                     sibling_tuple = [it for it in self.data[level] if it[0] == sibling][0]
                     parent = item[0].parent
