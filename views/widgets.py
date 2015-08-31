@@ -1,8 +1,10 @@
-from PySide.QtCore import Qt
+import pprint
+from PySide.QtCore import Qt, QLine
 from PySide.QtGui import QWidget, QLabel, QTableView, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QPushButton, \
-    QIcon, QAbstractItemView, QDialog, QMessageBox
+    QIcon, QAbstractItemView, QDialog, QMessageBox, QGridLayout, QPainter, QColor
+from domain.championship.models import ChampionshipModel
 
-from domain.models import ContestModel, team_model
+from domain.four_matches.models import ContestModel, team_model
 from views.dialogs import TeamDialog, ContestStatusDialog
 
 __author__ = 'msoum'
@@ -225,3 +227,169 @@ class RegistrationWidget(QWidget):
     def selected_team(self):
         selected_index = self.table_view.selectionModel().currentIndex().row()
         return self.model.get_team(selected_index)
+
+
+def get_parent_list(local_list):
+    return set([it[0].parent for it in local_list])
+
+
+class ChampionshipWidget(QWidget):
+    def __init__(self, parent=None):
+        super(ChampionshipWidget, self).__init__(parent)
+
+        self.data = {}
+        self.leave_list = []
+        self.__grid = QGridLayout()
+        self.model = ChampionshipModel(team_model.team_list)
+        self.make_leave_list()
+        self.init_ui()
+
+    def init_ui(self):
+        leave_count = len(self.model.graph.leaves)
+        self.setup_first_column(leave_count)
+        self.setLayout(self.__grid)
+
+    def setup_first_column(self, leave_count):
+        for i in range(0, (leave_count * 2) - 1):
+            if i % 2 == 0:
+                label = self.create_team_label(str(self.model.graph.leaves[i // 2]))
+                self.__grid.addWidget(label, i, 0)
+
+    def make_leave_list(self):
+        graph = self.model.graph
+        for i in range(0, graph.level_count()):
+            self.data[i] = []
+
+        top = 0
+        left = 0
+        self.data[0] = []
+        for leave in graph.leaves:
+            self.data[0].append((leave, top, left))
+            top += 2
+
+        for level in range(0, graph.level_count()):
+            print('Building level', level)
+            for item in self.data[level]:
+                sibling = graph.get_sibling(item[0])
+                print('Item :', item[0], str((item[1], item[2])), '( sibling', sibling, ')')
+                if sibling is not None and sibling in [it[0] for it in self.data[level]]:  # Classic
+                    sibling_tuple = [it for it in self.data[level] if it[0] == sibling][0]
+                    parent = item[0].parent
+                    if item[0].parent not in [it[0] for it in self.data[level + 1]]:
+                        if sibling_tuple[1] < item[1]:
+                            new_tuple = (parent, item[1] - (2 ** level), item[2] + 2)
+                            self.data[level + 1].append(new_tuple)
+                            self.add_bracket(sibling_tuple[1], item[1], new_tuple[1], item[2] + 1)
+                            self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
+                        else:
+                            new_tuple = (parent, item[1] + (2 ** level), item[2] + 2)
+                            self.data[level + 1].append(new_tuple)
+                            self.add_bracket(item[1], sibling_tuple[1], new_tuple[1], item[2] + 1)
+                            self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
+                elif item[0].parent is not None and item[0].parent not in [it[0] for it in self.data[level + 1]]:
+                    new_tuple = (item[0].parent, item[1] - (2 ** level), item[2] + 4)
+                    self.data[level + 2].append(new_tuple)
+                    self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
+                    self.add_line(item[1], item[2] + 1)
+                    sibling_tuple = [it for it in self.data[level + 1] if it[0] == sibling][0]
+                    self.add_bracket(sibling_tuple[1], item[1], new_tuple[1], sibling_tuple[2] + 1)
+
+    def add_bracket(self, top, bottom, middle, left):
+        self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
+        top_height = middle - top - 1
+        for i in range(0, top_height):
+            top += 1
+            self.__grid.addWidget(VerticalLine(self.__grid, top, left), top, left)
+        top += 1
+        self.__grid.addWidget(TShaped(self.__grid, top, left), top, left)
+        bottom_height = bottom - middle - 1
+        for i in range(0, bottom_height):
+            top += 1
+            self.__grid.addWidget(VerticalLine(self.__grid, top, left), top, left)
+        top += 1
+        self.__grid.addWidget(WestToNorth(self.__grid, top, left), top, left)
+
+    def add_line(self, top, left):
+        for i in range(0, 2):
+            self.__grid.addWidget(HorizontalLine(self.__grid, top, left + i), top, left + i)
+
+    @staticmethod
+    def create_team_label(label_text):
+        label = QLabel(label_text)
+        label.setMaximumWidth(125)
+        label.setAlignment(Qt.AlignCenter)
+        return label
+
+    def add_widget(self, widget, row, column):
+        self.__grid.addWidget(widget, row, column)
+
+
+class CustomWidget(QWidget):
+    def __init__(self, grid, row, column, parent=None):
+        super(CustomWidget, self).__init__(parent)
+        self.grid = grid
+        self.idx = (row, column)
+
+    def paintEvent(self, *args, **kwargs):
+        qp = QPainter()
+        qp.begin(self)
+        self.draw_rectangle(qp)
+        qp.end()
+
+
+class WestToSouth(CustomWidget):
+    def __init__(self, grid, row, column, parent=None):
+        super(WestToSouth, self).__init__(grid, row, column, parent)
+
+    def draw_rectangle(self, qp):
+        color = QColor(0, 0, 0)
+        qp.setPen(color)
+        rect = self.grid.cellRect(self.idx[0], self.idx[1])
+        qp.drawLine(QLine(0, rect.height() // 2, rect.width() // 2, rect.height() // 2))
+        qp.drawLine(QLine(rect.width() // 2, rect.height() // 2, rect.width() // 2, rect.height()))
+
+
+class WestToNorth(CustomWidget):
+    def __init__(self, grid, row, column, parent=None):
+        super(WestToNorth, self).__init__(grid, row, column, parent)
+
+    def draw_rectangle(self, qp):
+        color = QColor(0, 0, 0)
+        qp.setPen(color)
+        rect = self.grid.cellRect(self.idx[0], self.idx[1])
+        qp.drawLine(QLine(0, rect.height() // 2, rect.width() // 2, rect.height() // 2))
+        qp.drawLine(QLine(rect.width() // 2, rect.height() // 2, rect.width() // 2, 0))
+
+
+class TShaped(CustomWidget):
+    def __init__(self, grid, row, column, parent=None):
+        super(TShaped, self).__init__(grid, row, column, parent)
+
+    def draw_rectangle(self, qp):
+        color = QColor(0, 0, 0)
+        qp.setPen(color)
+        rect = self.grid.cellRect(self.idx[0], self.idx[1])
+        qp.drawLine(QLine(rect.width() // 2, 0, rect.width() // 2, rect.height()))
+        qp.drawLine(QLine(rect.width() // 2, rect.height() // 2, rect.width(), rect.height() // 2))
+
+
+class VerticalLine(CustomWidget):
+    def __init__(self, grid, row, column, parent=None):
+        super(VerticalLine, self).__init__(grid, row, column, parent)
+
+    def draw_rectangle(self, qp):
+        color = QColor(0, 0, 0)
+        qp.setPen(color)
+        rect = self.grid.cellRect(self.idx[0], self.idx[1])
+        qp.drawLine(QLine(rect.width() // 2, 0, rect.width() // 2, rect.height()))
+
+
+class HorizontalLine(CustomWidget):
+    def __init__(self, grid, row, column, parent=None):
+        super(HorizontalLine, self).__init__(grid, row, column, parent)
+
+    def draw_rectangle(self, qp):
+        color = QColor(0, 0, 0)
+        qp.setPen(color)
+        rect = self.grid.cellRect(self.idx[0], self.idx[1])
+        qp.drawLine(QLine(0, rect.height() // 2, rect.width(), rect.height() // 2))
