@@ -1,6 +1,6 @@
 from PySide.QtCore import Qt
 from PySide.QtGui import QDialog, QLineEdit, QFormLayout, QDialogButtonBox, QHBoxLayout, QVBoxLayout, QGridLayout, \
-    QLabel
+    QLabel, QRadioButton
 from domain.data_structures import Team
 
 __author__ = 'msoum'
@@ -111,3 +111,26 @@ class ContestStatusDialog(QDialog):
         total.setAlignment(Qt.AlignCenter)
         layout.addWidget(total, 0, 7)
 
+
+class ChampionshipMatchDialog(QDialog):
+    def __init__(self, node):
+        super().__init__()
+
+        first = node.left
+        second = node.right
+        self.setWindowTitle("Match %s vs %s" % (first.data.name, second.data.name))
+
+        layout = QGridLayout()
+        layout.addWidget(QRadioButton(first.data.name), 0, 0)
+        layout.addWidget(QRadioButton(second.data.name), 1, 0)
+
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+        button_box_layout = QHBoxLayout()
+        button_box_layout.addStretch(1)
+        button_box_layout.addWidget(button_box)
+
+        layout.addLayout(button_box_layout, 2, 0)
+
+        self.setLayout(layout)

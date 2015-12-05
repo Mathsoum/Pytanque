@@ -1,12 +1,12 @@
-import pprint
 from random import shuffle
-from PySide.QtCore import Qt, QLine
-from PySide.QtGui import QWidget, QLabel, QTableView, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QPushButton, \
-    QIcon, QAbstractItemView, QDialog, QMessageBox, QGridLayout, QPainter, QColor
-from domain.championship.models import ChampionshipModel
 
+from PySide.QtCore import Qt, QLine
+from PySide.QtGui import QWidget, QLabel, QTableView, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, \
+    QPushButton, QIcon, QAbstractItemView, QDialog, QMessageBox, QGridLayout, QPainter, QColor
+
+from domain.championship.models import ChampionshipModel
 from domain.four_matches.models import ContestModel, team_model
-from views.dialogs import TeamDialog, ContestStatusDialog
+from views.dialogs import TeamDialog, ContestStatusDialog, ChampionshipMatchDialog
 
 __author__ = 'msoum'
 
@@ -255,7 +255,7 @@ class ChampionshipWidget(QWidget):
     def setup_first_column(self, leave_count):
         for i in range(0, (leave_count * 2) - 1):
             if i % 2 == 0:
-                label = self.create_team_label(str(self.model.graph.leaves[i // 2]))
+                label = self.create_team_label(self.model.graph.leaves[i // 2])
                 self.__grid.addWidget(label, i, 0)
 
     def make_leave_list(self):
@@ -281,16 +281,16 @@ class ChampionshipWidget(QWidget):
                             new_tuple = (parent, item[1] - (2 ** level), item[2] + 2)
                             self.data[level + 1].append(new_tuple)
                             self.add_bracket(sibling_tuple[1], item[1], new_tuple[1], item[2] + 1)
-                            self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
+                            self.__grid.addWidget(self.create_team_label(new_tuple[0]), new_tuple[1], new_tuple[2])
                         else:
                             new_tuple = (parent, item[1] + (2 ** level), item[2] + 2)
                             self.data[level + 1].append(new_tuple)
                             self.add_bracket(item[1], sibling_tuple[1], new_tuple[1], item[2] + 1)
-                            self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
+                            self.__grid.addWidget(self.create_team_label(new_tuple[0]), new_tuple[1], new_tuple[2])
                 elif item[0].parent is not None and item[0].parent not in [it[0] for it in self.data[level + 1]]:
                     new_tuple = (item[0].parent, item[1] - (2 ** level), item[2] + 4)
                     self.data[level + 2].append(new_tuple)
-                    self.__grid.addWidget(self.create_team_label(str(new_tuple[0])), new_tuple[1], new_tuple[2])
+                    self.__grid.addWidget(self.create_team_label(new_tuple[0]), new_tuple[1], new_tuple[2])
                     self.add_line(item[1], item[2] + 1)
                     sibling_tuple = [it for it in self.data[level + 1] if it[0] == sibling][0]
                     self.add_bracket(sibling_tuple[1], item[1], new_tuple[1], sibling_tuple[2] + 1)
@@ -314,11 +314,9 @@ class ChampionshipWidget(QWidget):
         for i in range(0, 2):
             self.__grid.addWidget(HorizontalLine(self.__grid, top, left + i), top, left + i)
 
-    @staticmethod
-    def create_team_label(label_text):
-        label = QLabel(label_text)
+    def create_team_label(self, node):
+        label = ChampionshipMatchLabel(node)
         label.setMaximumWidth(125)
-        label.setAlignment(Qt.AlignCenter)
         return label
 
     def add_widget(self, widget, row, column):
@@ -394,3 +392,16 @@ class HorizontalLine(CustomWidget):
         qp.setPen(color)
         rect = self.grid.cellRect(self.idx[0], self.idx[1])
         qp.drawLine(QLine(0, rect.height() // 2, rect.width(), rect.height() // 2))
+
+
+class ChampionshipMatchLabel(QPushButton):
+    def __init__(self, node):
+        super().__init__(text=str(node))
+        self.setFlat(True)
+        self.node = node
+        self.clicked.connect(self.on_click)
+
+    def on_click(self):
+        dialog = ChampionshipMatchDialog(self.node)
+        if dialog.exec_() == QDialog.Accepted:
+            pass
