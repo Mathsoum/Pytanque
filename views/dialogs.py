@@ -116,21 +116,38 @@ class ChampionshipMatchDialog(QDialog):
     def __init__(self, node):
         super().__init__()
 
+        self.selection = None
+
         first = node.left
         second = node.right
         self.setWindowTitle("Match %s vs %s" % (first.data.name, second.data.name))
 
         layout = QGridLayout()
-        layout.addWidget(QRadioButton(first.data.name), 0, 0)
-        layout.addWidget(QRadioButton(second.data.name), 1, 0)
+        self.first_button = QRadioButton(first.data.name)
+        self.first_button.toggled.connect(self.selection_changed)
+        layout.addWidget(self.first_button, 0, 0)
+        self.second_button = QRadioButton(second.data.name)
+        self.second_button.toggled.connect(self.selection_changed)
+        layout.addWidget(self.second_button, 1, 0)
 
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        button_box.accepted.connect(self.accept)
-        button_box.rejected.connect(self.reject)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
         button_box_layout = QHBoxLayout()
         button_box_layout.addStretch(1)
-        button_box_layout.addWidget(button_box)
+        button_box_layout.addWidget(self.button_box)
+        self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
 
         layout.addLayout(button_box_layout, 2, 0)
 
         self.setLayout(layout)
+
+    def selection_changed(self):
+        if self.first_button.isChecked():
+            self.selection = self.first_button.text()
+        else:
+            self.selection = self.second_button.text()
+
+        print('Selection is %s' % self.selection)
+        self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
+

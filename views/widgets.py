@@ -402,6 +402,12 @@ class ChampionshipMatchLabel(QPushButton):
         self.clicked.connect(self.on_click)
 
     def on_click(self):
-        dialog = ChampionshipMatchDialog(self.node)
-        if dialog.exec_() == QDialog.Accepted:
-            pass
+        if self.node is not None:
+            dialog = ChampionshipMatchDialog(self.node)
+            if dialog.exec_() == QDialog.Accepted:
+                if self.node.left.data.name == dialog.selection:
+                    self.node.data = self.node.left.data
+                else:
+                    self.node.data = self.node.right.data
+
+                self.setText(str(self.node.data))
