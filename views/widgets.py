@@ -150,7 +150,6 @@ class ContestWidget(QWidget):
         else:
             winner = team_model.get_team_from_name(self.second_team_button.text().split(' (')[0])
 
-        # print("Winner button clicked ! Winner is %s" % winner)
         self.contest_model.set_winner(winner)
 
     def clear_selected_winner(self):
@@ -245,12 +244,13 @@ class ChampionshipWidget(QWidget):
         shuffle(local_team_list)
         self.model = ChampionshipModel(local_team_list)
         self.make_leave_list()
-        self.init_ui()
+        self.__grid.setSpacing(0)
+        # self.init_ui()
+        self.setLayout(self.__grid)
 
     def init_ui(self):
         leave_count = len(self.model.graph.leaves)
         self.setup_first_column(leave_count)
-        self.setLayout(self.__grid)
 
     def setup_first_column(self, leave_count):
         for i in range(0, (leave_count * 2) - 1):
@@ -268,6 +268,7 @@ class ChampionshipWidget(QWidget):
         self.data[0] = []
         for leave in graph.leaves:
             self.data[0].append((leave, top, left))
+            self.__grid.addWidget(self.create_team_label(leave), top, left)
             top += 2
 
         for level in range(0, graph.level_count()):
@@ -294,6 +295,10 @@ class ChampionshipWidget(QWidget):
                     self.add_line(item[1], item[2] + 1)
                     sibling_tuple = [it for it in self.data[level + 1] if it[0] == sibling][0]
                     self.add_bracket(sibling_tuple[1], item[1], new_tuple[1], sibling_tuple[2] + 1)
+
+        for level in range(0, graph.level_count()):
+            for item in self.data[level]:
+                node, top, left = item
 
     def add_bracket(self, top, bottom, middle, left):
         self.__grid.addWidget(WestToSouth(self.__grid, top, left), top, left)
@@ -394,15 +399,20 @@ class HorizontalLine(CustomWidget):
         qp.drawLine(QLine(0, rect.height() // 2, rect.width(), rect.height() // 2))
 
 
-class ChampionshipMatchLabel(QPushButton):
+class ChampionshipMatchLabel(QLabel):
     def __init__(self, node):
         super().__init__(text=str(node))
-        self.setFlat(True)
+        # self.setFlat(True)
         self.node = node
-        self.clicked.connect(self.on_click)
+        self.setAlignment(Qt.AlignCenter)
+        # self.clicked.connect(self.on_click)
+
+    def mousePressEvent(self, *args, **kwargs):
+        self.on_click()
 
     def on_click(self):
-        if self.node is not None:
+        if self.node.left is not None and self.node.left.data is not None\
+                and self.node.right is not None and self.node.right.data is not None:
             dialog = ChampionshipMatchDialog(self.node)
             if dialog.exec_() == QDialog.Accepted:
                 if self.node.left.data.name == dialog.selection:

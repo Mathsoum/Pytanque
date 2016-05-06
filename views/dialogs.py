@@ -1,3 +1,5 @@
+from PySide import QtCore
+
 from PySide.QtCore import Qt
 from PySide.QtGui import QDialog, QLineEdit, QFormLayout, QDialogButtonBox, QHBoxLayout, QVBoxLayout, QGridLayout, \
     QLabel, QRadioButton
@@ -114,13 +116,12 @@ class ContestStatusDialog(QDialog):
 
 class ChampionshipMatchDialog(QDialog):
     def __init__(self, node):
-        super().__init__()
+        super().__init__(None, QtCore.Qt.WindowSystemMenuHint | QtCore.Qt.WindowTitleHint)
 
         self.selection = None
 
         first = node.left
         second = node.right
-        self.setWindowTitle("Match %s vs %s" % (first.data.name, second.data.name))
 
         layout = QGridLayout()
         self.first_button = QRadioButton(first.data.name)
@@ -148,6 +149,5 @@ class ChampionshipMatchDialog(QDialog):
         else:
             self.selection = self.second_button.text()
 
-        print('Selection is %s' % self.selection)
         self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
 

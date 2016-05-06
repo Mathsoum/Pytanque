@@ -78,7 +78,6 @@ class MatchModel(QAbstractItemModel):
 
     def add_team(self, team):
         available_idx_list = [i for i in range(0, len(self.team_list)) if self.team_list[i] is None]
-        # print("Available indexes : %s" % available_idx_list)
         team_set = False
         if len(available_idx_list) == 1:
             opponent = self.team_list[self.get_opponent_idx(available_idx_list[0])]
@@ -237,7 +236,6 @@ class ContestModel:
         for model in model_list:
             opponent = model.get_opponent(team)
             if opponent is not None and opponent not in team.played_against:
-                # print("Set %s as winner against %s for model %s" % (team, opponent, model_list.index(model)))
                 model.set_winner(team, opponent)
                 self.update_model(opponent)
                 self.update_model(team)
